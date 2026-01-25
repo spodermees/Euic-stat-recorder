@@ -93,13 +93,16 @@
         </section>
     </main>
 
+    <script type="application/json" id="damage-rows-data">{{ damage_rows | tojson | safe }}</script>
     <script>
-        const damageRows = {{ damage_rows , tojson , safe }};
+        const damageRows = JSON.parse(document.getElementById('damage-rows-data')?.textContent || '[]');
         const attackerSelect = document.getElementById('attacker-select');
         const defenderSelect = document.getElementById('defender-select');
         const output = document.getElementById('damage-output');
 
         const normalize = (value) => (value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        const isFiniteNumber = (value) => Number.isFinite(value);
+        const formatPercent = (value) => (isFiniteNumber(value) ? `${value.toFixed(1)}%` : '—');
 
         const buildBreakdown = (attacker, defender) => {
             const buckets = {};
@@ -112,19 +115,23 @@
                 if (!buckets[key]) {
                     buckets[key] = {
                         move,
-                        min_low: row.value_low,
-                        max_high: row.value_high,
+                        min_low: null,
+                        max_high: null,
                         count: 0,
                         replay_url: row.replay_url || ''
                     };
                 }
                 const entry = buckets[key];
                 entry.count += 1;
-                if (row.value_low !== null && row.value_low !== undefined) {
-                    entry.min_low = Math.min(entry.min_low, row.value_low);
+                if (isFiniteNumber(row.value_low)) {
+                    entry.min_low = isFiniteNumber(entry.min_low)
+                        ? Math.min(entry.min_low, row.value_low)
+                        : row.value_low;
                 }
-                if (row.value_high !== null && row.value_high !== undefined) {
-                    entry.max_high = Math.max(entry.max_high, row.value_high);
+                if (isFiniteNumber(row.value_high)) {
+                    entry.max_high = isFiniteNumber(entry.max_high)
+                        ? Math.max(entry.max_high, row.value_high)
+                        : row.value_high;
                 }
                 if (!entry.replay_url && row.replay_url) {
                     entry.replay_url = row.replay_url;
@@ -151,7 +158,7 @@
                     <div class="list-item">
                         <div>
                             <strong>${item.move}</strong>
-                            <span>${item.min_low.toFixed(1)}% - ${item.max_high.toFixed(1)}%</span>
+                            <span>${formatPercent(item.min_low)} - ${formatPercent(item.max_high)}</span>
                             <span class="muted">${item.count} hits</span>
                         </div>
                         <div class="list-actions">
