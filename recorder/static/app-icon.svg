@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Showdown Recorder">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)" />
+  <circle cx="256" cy="256" r="148" fill="#ffffff" opacity="0.1" />
+  <path d="M160 272c24 56 80 96 152 96 72 0 128-40 152-96" fill="none" stroke="#38bdf8" stroke-width="32" stroke-linecap="round" />
+  <path d="M208 208h96v96h-96z" fill="#38bdf8" opacity="0.9" />
+</svg>

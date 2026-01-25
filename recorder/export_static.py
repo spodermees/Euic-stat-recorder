@@ -88,7 +88,7 @@ def export_site() -> None:
     )
 
     (OUTPUT_DIR / "index.html").write_text(html, encoding="utf-8")
-    shutil.copy2(BASE_DIR / "static" / "style.css", OUTPUT_STATIC_DIR / "style.css")
+    shutil.copytree(BASE_DIR / "static", OUTPUT_STATIC_DIR, dirs_exist_ok=True)
 
     db.close()
 
