@@ -11,7 +11,7 @@ from app import DB_PATH, MY_POKEMON_PRESET
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "templates"
-OUTPUT_DIR = BASE_DIR / "site"
+OUTPUT_DIR = BASE_DIR.parent / "docs"
 OUTPUT_STATIC_DIR = OUTPUT_DIR / "static"
 
 
