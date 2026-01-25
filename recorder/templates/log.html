@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ match.name }} log | Showdown Recorder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="app-header">
+        <div>
+            <h1>{{ match.name }}</h1>
+            <p>Replay log opgeslagen op de server.</p>
+        </div>
+        <div class="actions">
+            <a class="button" href="{{ url_for('match_detail', match_id=match.id) }}">Match</a>
+            <a class="button" href="{{ url_for('index') }}">Home</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card">
+            <h2>Log</h2>
+            {% if match.replay_url %}
+                <div class="summary" style="margin-bottom: 12px;">
+                    <a class="chip" href="{{ match.replay_url }}" target="_blank" rel="noreferrer">Replay</a>
+                </div>
+            {% endif %}
+            {% if log_rows %}
+                <pre class="log-output">{% for row in log_rows %}{% if row.turn %}Turn {{ row.turn }}: {% endif %}{{ row.raw_line }}{% if not loop.last %}
+{% endif %}{% endfor %}</pre>
+            {% else %}
+                <p class="muted">No log lines stored for this match yet.</p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

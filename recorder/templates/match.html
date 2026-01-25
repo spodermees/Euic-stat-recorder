@@ -13,6 +13,7 @@
             <p>Created {{ match.created_at }}</p>
         </div>
         <div class="actions">
+            <a class="button" href="{{ url_for('match_log', match_id=match.id) }}">Log</a>
             <a class="button" href="{{ url_for('index') }}">Back</a>
         </div>
     </header>
@@ -32,6 +33,22 @@
                 <button type="submit">Save nicknames</button>
             </form>
             <p class="hint">Leave blank for now and fill later. Owner detection updates automatically.</p>
+        </section>
+
+        <section class="card">
+            <h2>Mijn kant</h2>
+            <form class="form-grid" action="{{ url_for('update_match_side', match_id=match.id) }}" method="post">
+                <label>
+                    Mijn kant in de replay
+                    <select name="my_side">
+                        <option value="" {% if not my_side %}selected{% endif %}>Auto</option>
+                        <option value="p1" {% if my_side == 'p1' %}selected{% endif %}>p1</option>
+                        <option value="p2" {% if my_side == 'p2' %}selected{% endif %}>p2</option>
+                    </select>
+                </label>
+                <button type="submit">Opslaan</button>
+            </form>
+            <p class="hint">Gebruik auto als je nicknames goed staan. Kies p1/p2 als de eigenaar verkeerd staat.</p>
         </section>
 
         <section class="card">

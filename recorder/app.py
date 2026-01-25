@@ -99,6 +99,7 @@ def init_db() -> None:
     _ensure_column(db, "matches", "winner", "TEXT")
     _ensure_column(db, "matches", "result", "TEXT")
     _ensure_column(db, "matches", "replay_url", "TEXT")
+    _ensure_column(db, "matches", "my_side", "TEXT")
     db.execute(
         """
         CREATE TABLE IF NOT EXISTS match_nicknames (
@@ -190,12 +191,28 @@ def get_match_nicknames(match_id: int) -> dict[str, list[str]]:
     return nicknames
 
 
-def classify_owner(text: str | None, nicknames: dict[str, list[str]]) -> str | None:
+def _detect_side_token(normalized: str) -> str | None:
+    if not normalized:
+        return None
+    for token in normalized.split():
+        if token.startswith("p1"):
+            return "p1"
+        if token.startswith("p2"):
+            return "p2"
+    return None
+
+
+def classify_owner(text: str | None, nicknames: dict[str, list[str]], my_side: str | None = None) -> str | None:
     if not text:
         return None
     normalized = normalize_name(text)
     if "opposing" in normalized or "foe" in normalized:
         return "opponent"
+
+    if my_side:
+        side_token = _detect_side_token(normalized)
+        if side_token:
+            return "mine" if side_token == my_side else "opponent"
 
     for side, names in nicknames.items():
         for name in names:
@@ -204,6 +221,35 @@ def classify_owner(text: str | None, nicknames: dict[str, list[str]]) -> str | N
             if normalize_name(name) and normalize_name(name) in normalized:
                 return side
     return None
+
+
+def infer_my_side(db: sqlite3.Connection, match_id: int, my_names: Iterable[str]) -> str | None:
+    name_list = [name for name in my_names if name]
+    if not name_list:
+        return None
+    rows = db.execute(
+        "SELECT raw_line FROM log_lines WHERE match_id = ? ORDER BY id DESC LIMIT 2000",
+        (match_id,),
+    ).fetchall()
+    p1_hits = 0
+    p2_hits = 0
+    for row in rows:
+        normalized = normalize_name(row["raw_line"])
+        side = _detect_side_token(normalized)
+        if not side:
+            continue
+        for name in name_list:
+            if normalize_name(name) and normalize_name(name) in normalized:
+                if side == "p1":
+                    p1_hits += 1
+                elif side == "p2":
+                    p2_hits += 1
+                break
+    if p1_hits == 0 and p2_hits == 0:
+        return None
+    if p1_hits == p2_hits:
+        return None
+    return "p1" if p1_hits > p2_hits else "p2"
 
 
 def parse_log_lines(lines: Iterable[str]) -> list[dict]:
@@ -318,7 +364,13 @@ def parse_log_stream(lines: Iterable[str], state: dict) -> tuple[list[dict], dic
             if parsed.get("move"):
                 last_move = parsed["move"]
             if parsed.get("event"):
-                if parsed.get("event") == "damage":
+                if parsed.get("event") == "hp_update":
+                    target_key = parsed.get("target_key")
+                    current_hp_pct = parsed.get("current_hp_pct")
+                    if target_key and current_hp_pct is not None:
+                        hp_pct_map[target_key] = current_hp_pct
+                    parsed["event"] = None
+                elif parsed.get("event") == "damage":
                     parsed.setdefault("actor", last_actor)
                     parsed.setdefault("move", last_move)
                     target_key = parsed.get("target_key")
@@ -331,7 +383,8 @@ def parse_log_stream(lines: Iterable[str], state: dict) -> tuple[list[dict], dic
                             parsed["value_low"] = damage_pct
                             parsed["value_high"] = damage_pct
                         else:
-                            parsed["event"] = None
+                            parsed["value_low"] = None
+                            parsed["value_high"] = None
                 if parsed.get("event"):
                     events.append(
                         {
@@ -507,6 +560,20 @@ def parse_replay_line(line: str) -> dict:
         result["move"] = parts[3].strip()
         if len(parts) > 4:
             result["target"] = _strip_replay_prefix(parts[4])
+        return result
+
+    if tag in {"switch", "drag", "replace"} and len(parts) > 4:
+        target_key = parts[2].strip()
+        hp_text = parts[4]
+        pct = _parse_replay_hp(hp_text)
+        if pct is not None:
+            result.update(
+                {
+                    "event": "hp_update",
+                    "target_key": target_key,
+                    "current_hp_pct": pct,
+                }
+            )
         return result
 
     if tag == "-damage" and len(parts) > 3:
@@ -697,12 +764,18 @@ def index():
 def match_detail(match_id: int):
     db = get_db()
     match = db.execute(
-        "SELECT id, name, created_at FROM matches WHERE id = ?", (match_id,)
+        "SELECT id, name, created_at, my_side FROM matches WHERE id = ?", (match_id,)
     ).fetchone()
     if match is None:
         return redirect(url_for("index"))
 
     nicknames = get_match_nicknames(match_id)
+    my_names = nicknames["mine"] or MY_POKEMON_PRESET
+    my_side = match["my_side"] or infer_my_side(db, match_id, my_names)
+    effective_nicknames = {
+        "mine": my_names,
+        "opponent": nicknames["opponent"],
+    }
 
     events = db.execute(
         """
@@ -715,9 +788,9 @@ def match_detail(match_id: int):
     ).fetchall()
     decorated_events = []
     for event in events:
-        owner = classify_owner(event["actor"], nicknames) or classify_owner(
-            event["target"], nicknames
-        ) or classify_owner(event["raw_line"], nicknames)
+        owner = classify_owner(event["actor"], effective_nicknames) or classify_owner(
+            event["target"], effective_nicknames
+        ) or classify_owner(event["raw_line"], effective_nicknames, my_side=my_side)
         decorated_events.append({**dict(event), "owner": owner})
 
     attacker = request.args.get("attacker", "").strip()
@@ -734,8 +807,10 @@ def match_detail(match_id: int):
             and normalize_name(event["target"]) == normalize_name(defender)
         ]
         if matching:
-            min_low = min(event["value_low"] for event in matching if event["value_low"] is not None)
-            max_high = max(event["value_high"] for event in matching if event["value_high"] is not None)
+            lows = [event["value_low"] for event in matching if event["value_low"] is not None]
+            highs = [event["value_high"] for event in matching if event["value_high"] is not None]
+            min_low = min(lows) if lows else 0.0
+            max_high = max(highs) if highs else 0.0
             damage_summary = {
                 "attacker": attacker,
                 "defender": defender,
@@ -761,11 +836,11 @@ def match_detail(match_id: int):
         }
     )
 
-    mine_options = nicknames["mine"] or [
-        name for name in unique_names if classify_owner(name, nicknames) == "mine"
+    mine_options = effective_nicknames["mine"] or [
+        name for name in unique_names if classify_owner(name, effective_nicknames, my_side=my_side) == "mine"
     ]
-    opponent_options = nicknames["opponent"] or [
-        name for name in unique_names if classify_owner(name, nicknames) == "opponent"
+    opponent_options = effective_nicknames["opponent"] or [
+        name for name in unique_names if classify_owner(name, effective_nicknames, my_side=my_side) == "opponent"
     ]
     if not mine_options:
         mine_options = unique_names
@@ -782,7 +857,40 @@ def match_detail(match_id: int):
         attacker=attacker,
         defender=defender,
         damage_summary=damage_summary,
+        my_side=my_side,
     )
+
+
+@app.route("/match/<int:match_id>/side", methods=["POST"])
+def update_match_side(match_id: int):
+    side = (request.form.get("my_side") or "").strip().lower()
+    if side not in {"p1", "p2"}:
+        side = None
+    db = get_db()
+    db.execute(
+        "UPDATE matches SET my_side = ? WHERE id = ?",
+        (side, match_id),
+    )
+    db.commit()
+    return redirect(url_for("match_detail", match_id=match_id))
+
+
+@app.route("/match/<int:match_id>/log")
+def match_log(match_id: int):
+    db = get_db()
+    match = db.execute(
+        "SELECT id, name, created_at, replay_url FROM matches WHERE id = ?",
+        (match_id,),
+    ).fetchone()
+    if match is None:
+        return redirect(url_for("index"))
+
+    log_rows = db.execute(
+        "SELECT turn, raw_line FROM log_lines WHERE match_id = ? ORDER BY id ASC",
+        (match_id,),
+    ).fetchall()
+
+    return render_template("log.html", match=match, log_rows=log_rows)
 
 
 @app.route("/upload", methods=["POST"])

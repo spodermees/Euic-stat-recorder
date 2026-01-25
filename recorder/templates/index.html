@@ -168,6 +168,7 @@
                                 {% else %}
                                     <span class="chip">Geen replay</span>
                                 {% endif %}
+                                <a class="chip" href="{{ url_for('match_log', match_id=match.id) }}">Log</a>
                                 <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
                             </div>
                         </div>

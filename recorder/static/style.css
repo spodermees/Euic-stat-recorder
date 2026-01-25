@@ -239,6 +239,19 @@ td {
     color: #9aa4c7;
 }
 
+.log-output {
+    background: #0f1422;
+    border: 1px solid #20263a;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: "Consolas", monospace;
+    font-size: 13px;
+    color: #c9d2f1;
+    white-space: pre-wrap;
+    max-height: 65vh;
+    overflow: auto;
+}
+
 @media (max-width: 768px) {
     .app-header,
     .container {
