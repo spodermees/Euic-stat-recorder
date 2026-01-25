@@ -140,6 +140,14 @@
         </section>
 
         <section class="card">
+            <h2>Import replays.txt (server)</h2>
+            <form class="form-grid" id="replay-file-form">
+                <button type="submit">Import &amp; clear replays.txt</button>
+            </form>
+            <p class="hint" id="replay-file-status">Uses recorder/replays.txt on the server and clears it after import.</p>
+        </section>
+
+        <section class="card">
             <h2>Upload match log</h2>
             <form action="{{ url_for('upload_log') }}" method="post" enctype="multipart/form-data" class="form-grid">
                 <label>
@@ -185,6 +193,8 @@
         const replayStatus = document.getElementById('replay-status');
         const replayBulkForm = document.getElementById('replay-bulk-form');
         const replayBulkStatus = document.getElementById('replay-bulk-status');
+        const replayFileForm = document.getElementById('replay-file-form');
+        const replayFileStatus = document.getElementById('replay-file-status');
 
         replayForm?.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -267,6 +277,26 @@
                 }
             } catch (err) {
                 replayBulkStatus.textContent = 'Replay list import failed.';
+            }
+        });
+
+        replayFileForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            replayFileStatus.textContent = 'Importing replays.txt...';
+            try {
+                const response = await fetch('/api/ingest_replay_file', {
+                    method: 'POST'
+                });
+                const payload = await response.json();
+                if (response.ok) {
+                    const summary = payload.summary || {};
+                    replayFileStatus.textContent = `Imported ${summary.ok || 0}/${summary.total || 0} replays. File cleared.`;
+                    window.location.reload();
+                } else {
+                    replayFileStatus.textContent = payload.message || 'replays.txt import failed.';
+                }
+            } catch (err) {
+                replayFileStatus.textContent = 'replays.txt import failed.';
             }
         });
     </script>

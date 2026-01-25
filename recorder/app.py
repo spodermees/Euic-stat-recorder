@@ -1304,6 +1304,35 @@ def api_ingest_replay_bulk():
     return {"status": "ok", "summary": summary, "results": results}
 
 
+@app.route("/api/ingest_replay_file", methods=["POST"])
+def api_ingest_replay_file():
+    replay_file = BASE_DIR / "replays.txt"
+    if not replay_file.exists():
+        return {"status": "error", "message": "replays.txt not found"}, 404
+
+    text = replay_file.read_text(encoding="utf-8", errors="ignore")
+    urls = _extract_replay_urls(text)
+    replay_file.write_text("", encoding="utf-8")
+
+    if not urls:
+        return {"status": "error", "message": "no urls found", "cleared": True}, 400
+
+    results = []
+    ok_count = 0
+    for url in urls:
+        result = _ingest_replay_url(url)
+        if result.get("ok"):
+            ok_count += 1
+        results.append(result | {"input": url})
+
+    summary = {
+        "total": len(results),
+        "ok": ok_count,
+        "failed": len(results) - ok_count,
+    }
+    return {"status": "ok", "summary": summary, "results": results, "cleared": True}
+
+
 @app.route("/api/ingest_replay", methods=["OPTIONS"])
 def api_ingest_replay_options():
     return {"status": "ok"}
