@@ -59,6 +59,7 @@ TURN_PATTERN = re.compile(r"^Turn\s+(?P<turn>\d+)", re.IGNORECASE)
 MOVE_USED_PATTERN = re.compile(r"^(?P<actor>.+?) used (?P<move>.+?)!", re.IGNORECASE)
 REPLAY_HP_PATTERN = re.compile(r"(?P<hp>\d+(?:\.\d+)?)\s*/\s*(?P<max>\d+(?:\.\d+)?)")
 REPLAY_PERCENT_PATTERN = re.compile(r"(?P<pct>\d+(?:\.\d+)?)%")
+REPLAY_URL_PATTERN = re.compile(r"https?://\S+", re.IGNORECASE)
 FORMAT_PATTERN = re.compile(r"^Format:\s*(?P<format>.+)$", re.IGNORECASE)
 START_PATTERN = re.compile(
     r"^Battle started between (?P<player1>.+?) and (?P<player2>.+?)!$",
@@ -1041,18 +1042,40 @@ def _strip_replay_json(value: str) -> str:
     return url
 
 
-@app.route("/api/ingest_replay", methods=["POST"])
-def api_ingest_replay():
-    data = request.get_json(silent=True) or {}
-    replay_url = _normalize_replay_url(str(data.get("url", "")))
-    if not replay_url:
-        return {"status": "error", "message": "missing url"}, 400
+def _extract_replay_urls(text: str) -> list[str]:
+    if not text:
+        return []
+    candidates: list[str] = []
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        matches = REPLAY_URL_PATTERN.findall(line)
+        if matches:
+            candidates.extend(matches)
+        else:
+            candidates.append(line)
+    seen = set()
+    urls: list[str] = []
+    for item in candidates:
+        normalized = _normalize_replay_url(item)
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        urls.append(normalized)
+    return urls
+
+
+def _ingest_replay_url(replay_url: str) -> dict:
+    normalized = _normalize_replay_url(replay_url)
+    if not normalized:
+        return {"ok": False, "error": "missing url"}
 
     try:
-        with urllib.request.urlopen(replay_url, timeout=8) as response:
+        with urllib.request.urlopen(normalized, timeout=8) as response:
             payload = json.loads(response.read().decode("utf-8", errors="ignore"))
     except Exception:
-        return {"status": "error", "message": "failed to fetch replay"}, 400
+        return {"ok": False, "error": "failed to fetch replay", "url": _strip_replay_json(normalized)}
 
     log_text = str(payload.get("log", ""))
     lines = log_text.splitlines()
@@ -1075,7 +1098,7 @@ def api_ingest_replay():
             meta.get("player2"),
             meta.get("winner"),
             result,
-            _strip_replay_json(replay_url),
+            _strip_replay_json(normalized),
         ),
     )
     match_id = cursor.lastrowid
@@ -1121,7 +1144,56 @@ def api_ingest_replay():
 
     update_match_state(match_id, state)
     db.commit()
-    return {"status": "ok", "match_id": match_id, "events": len(events)}
+
+    return {
+        "ok": True,
+        "match_id": match_id,
+        "events": len(events),
+        "url": _strip_replay_json(normalized),
+    }
+
+
+@app.route("/api/ingest_replay", methods=["POST"])
+def api_ingest_replay():
+    data = request.get_json(silent=True) or {}
+    replay_url = str(data.get("url", ""))
+    result = _ingest_replay_url(replay_url)
+    if not result.get("ok"):
+        return {"status": "error", "message": result.get("error", "failed to fetch replay")}, 400
+    return {"status": "ok", "match_id": result["match_id"], "events": result["events"]}
+
+
+@app.route("/api/ingest_replay_bulk", methods=["POST"])
+def api_ingest_replay_bulk():
+    data = request.get_json(silent=True) or {}
+    urls = data.get("urls")
+    text = str(data.get("text", ""))
+    url_list: list[str] = []
+
+    if isinstance(urls, list):
+        url_list = [str(item) for item in urls]
+    elif isinstance(urls, str) and urls.strip():
+        url_list = [line.strip() for line in urls.splitlines() if line.strip()]
+    elif text.strip():
+        url_list = _extract_replay_urls(text)
+
+    if not url_list:
+        return {"status": "error", "message": "no urls found"}, 400
+
+    results = []
+    ok_count = 0
+    for url in url_list:
+        result = _ingest_replay_url(url)
+        if result.get("ok"):
+            ok_count += 1
+        results.append(result | {"input": url})
+
+    summary = {
+        "total": len(results),
+        "ok": ok_count,
+        "failed": len(results) - ok_count,
+    }
+    return {"status": "ok", "summary": summary, "results": results}
 
 
 @app.route("/api/ingest_replay", methods=["OPTIONS"])

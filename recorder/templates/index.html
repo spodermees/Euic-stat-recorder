@@ -128,6 +128,18 @@
         </section>
 
         <section class="card">
+            <h2>Import replay list (.txt)</h2>
+            <form class="form-grid" id="replay-bulk-form">
+                <label>
+                    Replay list file (.txt)
+                    <input type="file" name="replay_file" accept=".txt">
+                </label>
+                <button type="submit">Import list</button>
+            </form>
+            <p class="hint" id="replay-bulk-status">One replay URL per line (or paste multiple URLs in one line).</p>
+        </section>
+
+        <section class="card">
             <h2>Upload match log</h2>
             <form action="{{ url_for('upload_log') }}" method="post" enctype="multipart/form-data" class="form-grid">
                 <label>
@@ -170,6 +182,8 @@
     <script>
         const replayForm = document.getElementById('replay-form');
         const replayStatus = document.getElementById('replay-status');
+        const replayBulkForm = document.getElementById('replay-bulk-form');
+        const replayBulkStatus = document.getElementById('replay-bulk-status');
 
         replayForm?.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -196,6 +210,62 @@
                 }
             } catch (err) {
                 replayStatus.textContent = 'Replay import failed.';
+            }
+        });
+
+        const extractUrls = (text) => {
+            const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+            const urls = [];
+            const seen = new Set();
+            lines.forEach((line) => {
+                const matches = line.match(/https?:\/\/\S+/gi);
+                if (matches && matches.length) {
+                    matches.forEach((url) => {
+                        if (!seen.has(url)) {
+                            seen.add(url);
+                            urls.push(url);
+                        }
+                    });
+                } else if (!seen.has(line)) {
+                    seen.add(line);
+                    urls.push(line);
+                }
+            });
+            return urls;
+        };
+
+        replayBulkForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const fileInput = replayBulkForm.querySelector('input[name="replay_file"]');
+            const file = fileInput?.files?.[0];
+            if (!file) {
+                replayBulkStatus.textContent = 'Select a .txt file first.';
+                return;
+            }
+            replayBulkStatus.textContent = 'Importing replay list...';
+            try {
+                const text = await file.text();
+                const urls = extractUrls(text);
+                if (!urls.length) {
+                    replayBulkStatus.textContent = 'No URLs found in the file.';
+                    return;
+                }
+                const response = await fetch('/api/ingest_replay_bulk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ urls })
+                });
+                const payload = await response.json();
+                if (response.ok) {
+                    const summary = payload.summary || {};
+                    replayBulkStatus.textContent = `Imported ${summary.ok || 0}/${summary.total || urls.length} replays.`;
+                    fileInput.value = '';
+                    window.location.reload();
+                } else {
+                    replayBulkStatus.textContent = payload.message || 'Replay list import failed.';
+                }
+            } catch (err) {
+                replayBulkStatus.textContent = 'Replay list import failed.';
             }
         });
     </script>
