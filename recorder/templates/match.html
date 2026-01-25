@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ match.name }} | Showdown Recorder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="app-header">
+        <div>
+            <h1>{{ match.name }}</h1>
+            <p>Created {{ match.created_at }}</p>
+        </div>
+        <div class="actions">
+            <a class="button" href="{{ url_for('index') }}">Back</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card">
+            <h2>Nickname map (optional)</h2>
+            <form class="form-grid" action="{{ url_for('update_nicknames', match_id=match.id) }}" method="post">
+                <label>
+                    My nicknames (comma or line separated)
+                    <textarea name="mine_nicknames" rows="3" placeholder="Hariyama, Bellibolt">{{ nicknames.mine | join(', ') }}</textarea>
+                </label>
+                <label>
+                    Opponent nicknames (comma or line separated)
+                    <textarea name="opponent_nicknames" rows="3" placeholder="Mewtwo, Gholdengo">{{ nicknames.opponent | join(', ') }}</textarea>
+                </label>
+                <button type="submit">Save nicknames</button>
+            </form>
+            <p class="hint">Leave blank for now and fill later. Owner detection updates automatically.</p>
+        </section>
+
+        <section class="card">
+            <h2>Damage range lookup</h2>
+            <form class="form-grid" method="get" action="{{ url_for('match_detail', match_id=match.id) }}">
+                <label>
+                    My Pokémon
+                    <select name="attacker" required>
+                        <option value="" disabled {% if not attacker %}selected{% endif %}>Select attacker</option>
+                        {% for name in mine_options %}
+                            <option value="{{ name }}" {% if attacker == name %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    Opponent Pokémon
+                    <select name="defender" required>
+                        <option value="" disabled {% if not defender %}selected{% endif %}>Select defender</option>
+                        {% for name in opponent_options %}
+                            <option value="{{ name }}" {% if defender == name %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <button type="submit">Show range</button>
+            </form>
+
+            {% if damage_summary %}
+                {% if damage_summary.count > 0 %}
+                    <div class="summary">
+                        <strong>{{ damage_summary.attacker }}</strong> → <strong>{{ damage_summary.defender }}</strong>
+                        <span class="chip damage">
+                            {{ '%.1f'|format(damage_summary.min_low) }}% - {{ '%.1f'|format(damage_summary.max_high) }}%
+                        </span>
+                        <span class="muted">{{ damage_summary.count }} hits found</span>
+                    </div>
+                {% else %}
+                    <p class="muted">No damage lines found for that matchup yet.</p>
+                {% endif %}
+            {% else %}
+                <p class="muted">Select two Pokémon to see the min/max damage range.</p>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>Extracted events</h2>
+            {% if events %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Owner</th>
+                            <th>Type</th>
+                            <th>Actor</th>
+                            <th>Move</th>
+                            <th>Target</th>
+                            <th>Turn</th>
+                            <th>Range %</th>
+                            <th>Raw line</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events %}
+                            <tr>
+                                <td>
+                                    {% if event.owner == 'mine' %}
+                                        <span class="chip mine">Mine</span>
+                                    {% elif event.owner == 'opponent' %}
+                                        <span class="chip opponent">Opponent</span>
+                                    {% else %}
+                                        <span class="chip">Unknown</span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="chip {{ event.event_type }}">{{ event.event_type }}</span></td>
+                                <td>{{ event.actor or '-' }}</td>
+                                <td>{{ event.move or '-' }}</td>
+                                <td>{{ event.target or '-' }}</td>
+                                <td>{{ event.turn or '-' }}</td>
+                                <td>
+                                    {% if event.value_low is not none %}
+                                        {{ '%.1f'|format(event.value_low) }} - {{ '%.1f'|format(event.value_high) }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="raw">{{ event.raw_line }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No events detected in this log.</p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

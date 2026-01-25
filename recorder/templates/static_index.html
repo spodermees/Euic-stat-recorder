@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Showdown Recorder (Static)</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div>
+            <h1>Showdown Recorder</h1>
+            <p>Static snapshot for mobile viewing.</p>
+        </div>
+        <div class="stat">
+            <span>Total events</span>
+            <strong>{{ damage_stats.total_hits or 0 }}</strong>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card">
+            <h2>Overall damage (all matches)</h2>
+            {% if damage_stats.total_hits %}
+                <div class="summary">
+                    <span class="chip damage">Min {{ '%.1f'|format(damage_stats.min_damage) }}%</span>
+                    <span class="chip damage">Max {{ '%.1f'|format(damage_stats.max_damage) }}%</span>
+                    <span class="chip">Avg {{ '%.1f'|format(damage_stats.avg_damage) }}%</span>
+                    <span class="muted">{{ damage_stats.total_hits }} hits</span>
+                </div>
+
+                <form class="form-grid" id="damage-form" style="margin-top:16px;">
+                    <label>
+                        Mijn Pokémon
+                        <select name="attacker" id="attacker-select" required>
+                            <option value="" disabled selected>Selecteer mijn Pokémon</option>
+                            {% for name in attacker_options %}
+                                <option value="{{ name }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>
+                        Tegenstander Pokémon
+                        <select name="defender" id="defender-select" required>
+                            <option value="" disabled selected>Selecteer tegenstander</option>
+                            {% for name in opponent_options %}
+                                <option value="{{ name }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </form>
+
+                <div class="damage-dual" id="damage-output">
+                    <div>
+                        <h3>Mijn Pokémon → Tegenstander</h3>
+                        <p class="muted">Selecteer twee Pokémon om de dmg range te zien.</p>
+                    </div>
+                    <div>
+                        <h3>Tegenstander → Mijn Pokémon</h3>
+                        <p class="muted">Selecteer twee Pokémon om de dmg range te zien.</p>
+                    </div>
+                </div>
+            {% else %}
+                <p>No damage data yet. Export again when there is data.</p>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>Matches</h2>
+            {% if matches %}
+                <div class="list">
+                    {% for match in matches %}
+                        <div class="list-item">
+                            <div>
+                                <strong>{{ match.name }}</strong>
+                                <span>{{ match.format or 'Unknown format' }} · {{ match.created_at }}</span>
+                                <span>Winner: {{ match.winner or 'Unknown' }}{% if match.result %} · {{ match.result }}{% endif %}</span>
+                            </div>
+                            <div class="list-actions">
+                                {% if match.replay_url %}
+                                    <a class="chip" href="{{ match.replay_url }}" target="_blank" rel="noreferrer">Replay</a>
+                                {% else %}
+                                    <span class="chip">Geen replay</span>
+                                {% endif %}
+                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No matches yet.</p>
+            {% endif %}
+        </section>
+    </main>
+
+    <script>
+        const damageRows = {{ damage_rows , tojson , safe }};
+        const attackerSelect = document.getElementById('attacker-select');
+        const defenderSelect = document.getElementById('defender-select');
+        const output = document.getElementById('damage-output');
+
+        const normalize = (value) => (value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+        const buildBreakdown = (attacker, defender) => {
+            const buckets = {};
+            damageRows.forEach((row) => {
+                if (!row.actor || !row.target) return;
+                if (normalize(row.actor) !== normalize(attacker)) return;
+                if (normalize(row.target) !== normalize(defender)) return;
+                const move = row.move || '-';
+                const key = move;
+                if (!buckets[key]) {
+                    buckets[key] = {
+                        move,
+                        min_low: row.value_low,
+                        max_high: row.value_high,
+                        count: 0,
+                        replay_url: row.replay_url || ''
+                    };
+                }
+                const entry = buckets[key];
+                entry.count += 1;
+                if (row.value_low !== null && row.value_low !== undefined) {
+                    entry.min_low = Math.min(entry.min_low, row.value_low);
+                }
+                if (row.value_high !== null && row.value_high !== undefined) {
+                    entry.max_high = Math.max(entry.max_high, row.value_high);
+                }
+                if (!entry.replay_url && row.replay_url) {
+                    entry.replay_url = row.replay_url;
+                }
+            });
+            return Object.values(buckets).sort((a, b) => b.max_high - a.max_high);
+        };
+
+        const renderList = (title, items) => {
+            if (!items.length) {
+                return `
+                    <div>
+                        <h3>${title}</h3>
+                        <p class="muted">Geen dmg gevonden.</p>
+                    </div>
+                `;
+            }
+
+            const rows = items.map((item) => {
+                const replay = item.replay_url
+                    ? `<a class="chip" href="${item.replay_url}" target="_blank" rel="noreferrer">Replay</a>`
+                    : `<span class="chip">Geen replay</span>`;
+                return `
+                    <div class="list-item">
+                        <div>
+                            <strong>${item.move}</strong>
+                            <span>${item.min_low.toFixed(1)}% - ${item.max_high.toFixed(1)}%</span>
+                            <span class="muted">${item.count} hits</span>
+                        </div>
+                        <div class="list-actions">
+                            ${replay}
+                            <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div>
+                    <h3>${title}</h3>
+                    <div class="list">
+                        ${rows}
+                    </div>
+                </div>
+            `;
+        };
+
+        const update = () => {
+            const attacker = attackerSelect.value;
+            const defender = defenderSelect.value;
+            if (!attacker || !defender) {
+                return;
+            }
+            const forward = buildBreakdown(attacker, defender);
+            const reverse = buildBreakdown(defender, attacker);
+            output.innerHTML = [
+                renderList(`${attacker} → ${defender}`, forward),
+                renderList(`${defender} → ${attacker}`, reverse)
+            ].join('');
+        };
+
+        attackerSelect?.addEventListener('change', update);
+        defenderSelect?.addEventListener('change', update);
+    </script>
+</body>
+</html>

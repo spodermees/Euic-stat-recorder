@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Showdown Recorder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="app-header">
+        <div>
+            <h1>Showdown Recorder</h1>
+            <p>Upload a chat log to extract items and damage ranges.</p>
+        </div>
+        <div class="stat">
+            <span>Total events</span>
+            <strong>{{ totals.total_events or 0 }}</strong>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card">
+            <h2>Overall damage (all matches)</h2>
+            {% if damage_stats.total_hits %}
+                <div class="summary">
+                    <span class="chip damage">Min {{ '%.1f'|format(damage_stats.min_damage) }}%</span>
+                    <span class="chip damage">Max {{ '%.1f'|format(damage_stats.max_damage) }}%</span>
+                    <span class="chip">Avg {{ '%.1f'|format(damage_stats.avg_damage) }}%</span>
+                    <span class="muted">{{ damage_stats.total_hits }} hits</span>
+                </div>
+                {% if attacker_options and opponent_options %}
+                    <form class="form-grid" method="get" action="{{ url_for('index') }}" style="margin-top:16px;">
+                        <label>
+                            Mijn Pokémon
+                            <select name="attacker" required>
+                                <option value="" disabled {% if not attacker %}selected{% endif %}>Selecteer mijn Pokémon</option>
+                                {% for name in attacker_options %}
+                                    <option value="{{ name }}" {% if attacker == name %}selected{% endif %}>{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <label>
+                            Tegenstander Pokémon
+                            <select name="defender" required>
+                                <option value="" disabled {% if not defender %}selected{% endif %}>Selecteer tegenstander</option>
+                                {% for name in opponent_options %}
+                                    <option value="{{ name }}" {% if defender == name %}selected{% endif %}>{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <button type="submit">Toon dmg range</button>
+                    </form>
+
+                    {% if damage_lookup %}
+                        <div class="damage-dual">
+                            <div>
+                                <h3>{{ damage_lookup.attacker }} → {{ damage_lookup.defender }}</h3>
+                                {% if damage_lookup.forward %}
+                                    <div class="list">
+                                        {% for item in damage_lookup.forward %}
+                                            <div class="list-item">
+                                                <div>
+                                                    <strong>{{ item.move }}</strong>
+                                                    <span>{{ '%.1f'|format(item.min_low) }}% - {{ '%.1f'|format(item.max_high) }}%</span>
+                                                    <span class="muted">{{ item.count }} hits</span>
+                                                </div>
+                                                <div class="list-actions">
+                                                    {% if item.replay_url %}
+                                                        <a class="chip" href="{{ item.replay_url }}" target="_blank" rel="noreferrer">Replay</a>
+                                                    {% else %}
+                                                        <span class="chip">Geen replay</span>
+                                                    {% endif %}
+                                                    <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="muted">Geen dmg gevonden.</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h3>{{ damage_lookup.defender }} → {{ damage_lookup.attacker }}</h3>
+                                {% if damage_lookup.reverse %}
+                                    <div class="list">
+                                        {% for item in damage_lookup.reverse %}
+                                            <div class="list-item">
+                                                <div>
+                                                    <strong>{{ item.move }}</strong>
+                                                    <span>{{ '%.1f'|format(item.min_low) }}% - {{ '%.1f'|format(item.max_high) }}%</span>
+                                                    <span class="muted">{{ item.count }} hits</span>
+                                                </div>
+                                                <div class="list-actions">
+                                                    {% if item.replay_url %}
+                                                        <a class="chip" href="{{ item.replay_url }}" target="_blank" rel="noreferrer">Replay</a>
+                                                    {% else %}
+                                                        <span class="chip">Geen replay</span>
+                                                    {% endif %}
+                                                    <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="muted">Geen dmg gevonden.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="damage-details">Selecteer twee Pokémon om de dmg range te zien.</p>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <p>No damage data yet. Import a replay or upload a log.</p>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>Import replay URL</h2>
+            <form class="form-grid" id="replay-form">
+                <label>
+                    Battle replay URL
+                    <input type="text" name="replay_url" placeholder="https://replay.pokemonshowdown.com/gen9randombattle-1234567890">
+                </label>
+                <button type="submit">Import replay</button>
+            </form>
+            <p class="hint" id="replay-status">Paste a replay URL to import the full chat log.</p>
+        </section>
+
+        <section class="card">
+            <h2>Upload match log</h2>
+            <form action="{{ url_for('upload_log') }}" method="post" enctype="multipart/form-data" class="form-grid">
+                <label>
+                    Log file (.txt)
+                    <input type="file" name="log_file" accept=".txt">
+                </label>
+                <button type="submit">Upload</button>
+            </form>
+            <p class="hint">The dashboard is read-only. To add data, upload logs or POST to /api/ingest.</p>
+        </section>
+
+        <section class="card">
+            <h2>Matches</h2>
+            {% if matches %}
+                <div class="list">
+                    {% for match in matches %}
+                        <div class="list-item">
+                            <div>
+                                <strong>{{ match.name }}</strong>
+                                <span>{{ match.format or 'Unknown format' }} · {{ match.created_at }}</span>
+                                <span>Winner: {{ match.winner or 'Unknown' }}{% if match.result %} · {{ match.result }}{% endif %}</span>
+                            </div>
+                            <div class="list-actions">
+                                {% if match.replay_url %}
+                                    <a class="chip" href="{{ match.replay_url }}" target="_blank" rel="noreferrer">Replay</a>
+                                {% else %}
+                                    <span class="chip">Geen replay</span>
+                                {% endif %}
+                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No matches yet. Upload a log to get started.</p>
+            {% endif %}
+        </section>
+    </main>
+
+    <script>
+        const replayForm = document.getElementById('replay-form');
+        const replayStatus = document.getElementById('replay-status');
+
+        replayForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const input = replayForm.querySelector('input[name="replay_url"]');
+            const url = input?.value?.trim();
+            if (!url) {
+                replayStatus.textContent = 'Enter a replay URL first.';
+                return;
+            }
+            replayStatus.textContent = 'Importing replay...';
+            try {
+                const response = await fetch('/api/ingest_replay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                const payload = await response.json();
+                if (response.ok) {
+                    replayStatus.textContent = 'Replay imported. Open it from the matches list.';
+                    input.value = '';
+                    window.location.reload();
+                } else {
+                    replayStatus.textContent = payload.message || 'Replay import failed.';
+                }
+            } catch (err) {
+                replayStatus.textContent = 'Replay import failed.';
+            }
+        });
+    </script>
+</body>
+</html>
