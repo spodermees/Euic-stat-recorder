@@ -66,6 +66,14 @@ START_PATTERN = re.compile(
     re.IGNORECASE,
 )
 WIN_PATTERN = re.compile(r"^(?P<winner>.+?) won the battle!$", re.IGNORECASE)
+RATING_STRONG_PATTERN = re.compile(
+    r"^(?P<user>.+?)'s rating:\s*(?P<before>\d+).*?<strong>(?P<after>\d+)</strong>",
+    re.IGNORECASE,
+)
+RAW_RATING_PATTERN = re.compile(
+    r"^\|raw\|\s*(?P<user>.+?)'s rating:\s*(?P<before>\d+).*?<strong>(?P<after>\d+)</strong>",
+    re.IGNORECASE,
+)
 
 
 def get_db() -> sqlite3.Connection:
@@ -100,6 +108,8 @@ def init_db() -> None:
     _ensure_column(db, "matches", "result", "TEXT")
     _ensure_column(db, "matches", "replay_url", "TEXT")
     _ensure_column(db, "matches", "my_side", "TEXT")
+    _ensure_column(db, "matches", "rating_user", "TEXT")
+    _ensure_column(db, "matches", "rating_after", "INTEGER")
     db.execute(
         """
         CREATE TABLE IF NOT EXISTS match_nicknames (
@@ -258,7 +268,14 @@ def parse_log_lines(lines: Iterable[str]) -> list[dict]:
 
 
 def parse_match_meta(lines: Iterable[str]) -> dict:
-    meta = {"format": None, "player1": None, "player2": None, "winner": None}
+    meta = {
+        "format": None,
+        "player1": None,
+        "player2": None,
+        "winner": None,
+        "rating_user": None,
+        "rating_after": None,
+    }
     for raw in lines:
         line = raw.strip()
         if not line:
@@ -276,6 +293,12 @@ def parse_match_meta(lines: Iterable[str]) -> dict:
                     meta["player2"] = name
             if len(parts) > 2 and parts[1] == "win":
                 meta["winner"] = parts[2].strip()
+            if len(parts) > 2 and parts[1] == "raw":
+                raw_html = parts[2].strip()
+                rating_match = RATING_STRONG_PATTERN.match(raw_html)
+                if rating_match:
+                    meta["rating_user"] = rating_match.group("user").strip()
+                    meta["rating_after"] = int(rating_match.group("after"))
             continue
 
         format_match = FORMAT_PATTERN.match(line)
@@ -312,7 +335,7 @@ def compute_result(meta: dict) -> str | None:
 def apply_match_meta(match_id: int, meta: dict) -> None:
     db = get_db()
     existing = db.execute(
-        "SELECT format, player1, player2, winner, result FROM matches WHERE id = ?",
+        "SELECT format, player1, player2, winner, result, rating_user, rating_after FROM matches WHERE id = ?",
         (match_id,),
     ).fetchone()
     updated = {
@@ -320,6 +343,8 @@ def apply_match_meta(match_id: int, meta: dict) -> None:
         "player1": meta.get("player1") or (existing["player1"] if existing else None),
         "player2": meta.get("player2") or (existing["player2"] if existing else None),
         "winner": meta.get("winner") or (existing["winner"] if existing else None),
+        "rating_user": meta.get("rating_user") or (existing["rating_user"] if existing else None),
+        "rating_after": meta.get("rating_after") or (existing["rating_after"] if existing else None),
     }
     result = compute_result(updated)
     updated["result"] = result or (existing["result"] if existing else None)
@@ -327,7 +352,7 @@ def apply_match_meta(match_id: int, meta: dict) -> None:
     db.execute(
         """
         UPDATE matches
-        SET format = ?, player1 = ?, player2 = ?, winner = ?, result = ?
+        SET format = ?, player1 = ?, player2 = ?, winner = ?, result = ?, rating_user = ?, rating_after = ?
         WHERE id = ?
         """,
         (
@@ -336,6 +361,8 @@ def apply_match_meta(match_id: int, meta: dict) -> None:
             updated["player2"],
             updated["winner"],
             updated["result"],
+            updated["rating_user"],
+            updated["rating_after"],
             match_id,
         ),
     )
@@ -719,6 +746,7 @@ def index():
                         "move": move,
                         "min_low": row["value_low"],
                         "max_high": row["value_high"],
+                        "sum_mid": 0.0,
                         "count": 0,
                         "replay_url": row["replay_url"],
                     }
@@ -730,6 +758,15 @@ def index():
                     entry["max_high"] = max(entry["max_high"], row["value_high"])
                 if not entry["replay_url"] and row["replay_url"]:
                     entry["replay_url"] = row["replay_url"]
+                if row["value_low"] is not None and row["value_high"] is not None:
+                    entry["sum_mid"] += (row["value_low"] + row["value_high"]) / 2.0
+
+            for entry in buckets.values():
+                if entry["count"]:
+                    entry["avg"] = entry["sum_mid"] / entry["count"]
+                else:
+                    entry["avg"] = 0.0
+                entry.pop("sum_mid", None)
 
             return sorted(buckets.values(), key=lambda item: item["max_high"], reverse=True)
 
@@ -1130,6 +1167,96 @@ def api_ingest_line():
 @app.route("/api/ingest_line", methods=["OPTIONS"])
 def api_ingest_line_options():
     return {"status": "ok"}
+
+
+@app.route("/api/showdown_rating")
+def api_showdown_rating():
+    username = (request.args.get("user") or "").strip()
+    if not username:
+        return {"ok": False, "error": "missing user"}, 400
+
+    db = get_db()
+    rating_rows = db.execute(
+        """
+        SELECT rating_user, rating_after, format, created_at
+        FROM matches
+        WHERE rating_user IS NOT NULL AND rating_after IS NOT NULL
+        ORDER BY id DESC
+        LIMIT 200
+        """,
+    ).fetchall()
+    normalized_user = normalize_name(username)
+    for row in rating_rows:
+        if normalize_name(row["rating_user"]) == normalized_user:
+            return {
+                "ok": True,
+                "user": row["rating_user"],
+                "rating": {
+                    "format": row["format"],
+                    "elo": row["rating_after"],
+                    "source": "match_log",
+                },
+            }
+
+    raw_rows = db.execute(
+        """
+        SELECT raw_line, match_id
+        FROM log_lines
+        WHERE raw_line LIKE '%rating:%'
+        ORDER BY id DESC
+        LIMIT 500
+        """,
+    ).fetchall()
+    for row in raw_rows:
+        raw_line = row["raw_line"]
+        rating_match = RAW_RATING_PATTERN.match(raw_line)
+        if not rating_match:
+            continue
+        if normalize_name(rating_match.group("user")) != normalized_user:
+            continue
+        match_row = db.execute(
+            "SELECT format FROM matches WHERE id = ?",
+            (row["match_id"],),
+        ).fetchone()
+        return {
+            "ok": True,
+            "user": rating_match.group("user").strip(),
+            "rating": {
+                "format": match_row["format"] if match_row else None,
+                "elo": int(rating_match.group("after")),
+                "source": "raw_log",
+            },
+        }
+
+    url = f"https://pokemonshowdown.com/users/{username}.json"
+    try:
+        with urllib.request.urlopen(url, timeout=8) as response:
+            payload = json.loads(response.read().decode("utf-8", errors="ignore"))
+    except Exception:
+        return {"ok": False, "error": "failed to fetch"}, 502
+
+    ratings = payload.get("ratings") or {}
+    best = None
+    for format_name, info in ratings.items():
+        if not isinstance(info, dict):
+            continue
+        elo = info.get("elo")
+        if elo is None:
+            continue
+        if best is None or elo > best["elo"]:
+            best = {
+                "format": format_name,
+                "elo": elo,
+                "gxe": info.get("gxe"),
+                "rpr": info.get("rpr"),
+                "rprd": info.get("rprd"),
+            }
+
+    return {
+        "ok": True,
+        "user": payload.get("user") or username,
+        "rating": best,
+    }
 
 
 def _normalize_replay_url(value: str) -> str:

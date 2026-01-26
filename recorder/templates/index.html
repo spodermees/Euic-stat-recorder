@@ -16,6 +16,11 @@
             <span>Total events</span>
             <strong>{{ totals.total_events or 0 }}</strong>
         </div>
+        <div class="rating" aria-live="polite">
+            <span>Current rating</span>
+            <strong id="rating-elo">...</strong>
+            <small id="rating-format" class="muted">Loading...</small>
+        </div>
     </header>
 
     <main class="container">
@@ -62,6 +67,7 @@
                                                 <div>
                                                     <strong>{{ item.move }}</strong>
                                                     <span>{{ '%.1f'|format(item.min_low) }}% - {{ '%.1f'|format(item.max_high) }}%</span>
+                                                    <span>Avg {{ '%.1f'|format(item.avg) }}%</span>
                                                     <span class="muted">{{ item.count }} hits</span>
                                                 </div>
                                                 <div class="list-actions">
@@ -88,6 +94,7 @@
                                                 <div>
                                                     <strong>{{ item.move }}</strong>
                                                     <span>{{ '%.1f'|format(item.min_low) }}% - {{ '%.1f'|format(item.max_high) }}%</span>
+                                                    <span>Avg {{ '%.1f'|format(item.avg) }}%</span>
                                                     <span class="muted">{{ item.count }} hits</span>
                                                 </div>
                                                 <div class="list-actions">
@@ -148,43 +155,36 @@
         </section>
 
         <section class="card">
-            <h2>Upload match log</h2>
-            <form action="{{ url_for('upload_log') }}" method="post" enctype="multipart/form-data" class="form-grid">
-                <label>
-                    Log file (.txt)
-                    <input type="file" name="log_file" accept=".txt">
-                </label>
-                <button type="submit">Upload</button>
-            </form>
-            <p class="hint">The dashboard is read-only. To add data, upload logs or POST to /api/ingest.</p>
-        </section>
-
-        <section class="card">
-            <h2>Matches</h2>
-            {% if matches %}
-                <div class="list">
-                    {% for match in matches %}
-                        <div class="list-item">
-                            <div>
-                                <strong>{{ match.name }}</strong>
-                                <span>{{ match.format or 'Unknown format' }} · {{ match.created_at }}</span>
-                                <span>Winner: {{ match.winner or 'Unknown' }}{% if match.result %} · {{ match.result }}{% endif %}</span>
+            <details class="collapsible" open>
+                <summary>
+                    <h2>Matches</h2>
+                    <span class="muted">Toon/verberg lijst</span>
+                </summary>
+                {% if matches %}
+                    <div class="list" style="margin-top: 16px;">
+                        {% for match in matches %}
+                            <div class="list-item">
+                                <div>
+                                    <strong>{{ match.name }}</strong>
+                                    <span>{{ match.format or 'Unknown format' }} · {{ match.created_at }}</span>
+                                    <span>Winner: {{ match.winner or 'Unknown' }}{% if match.result %} · {{ match.result }}{% endif %}</span>
+                                </div>
+                                <div class="list-actions">
+                                    {% if match.replay_url %}
+                                        <a class="chip" href="{{ match.replay_url }}" target="_blank" rel="noreferrer">Replay</a>
+                                    {% else %}
+                                        <span class="chip">Geen replay</span>
+                                    {% endif %}
+                                    <a class="chip" href="{{ url_for('match_log', match_id=match.id) }}">Log</a>
+                                    <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                                </div>
                             </div>
-                            <div class="list-actions">
-                                {% if match.replay_url %}
-                                    <a class="chip" href="{{ match.replay_url }}" target="_blank" rel="noreferrer">Replay</a>
-                                {% else %}
-                                    <span class="chip">Geen replay</span>
-                                {% endif %}
-                                <a class="chip" href="{{ url_for('match_log', match_id=match.id) }}">Log</a>
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <p>No matches yet. Upload a log to get started.</p>
-            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No matches yet. Upload a log to get started.</p>
+                {% endif %}
+            </details>
         </section>
     </main>
 
@@ -196,6 +196,8 @@
         const replayFileForm = document.getElementById('replay-file-form');
         const replayFileStatus = document.getElementById('replay-file-status');
         const searchableSelects = document.querySelectorAll('.js-searchable-select');
+        const ratingElo = document.getElementById('rating-elo');
+        const ratingFormat = document.getElementById('rating-format');
 
         replayForm?.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -385,6 +387,37 @@
             select.classList.add('searchable-hidden');
             select.parentNode.insertBefore(wrapper, select);
         });
+
+        const loadRating = async () => {
+            if (!ratingElo || !ratingFormat) return;
+            try {
+                const response = await fetch('/api/showdown_rating?user=spodermees');
+                const payload = await response.json();
+                if (!response.ok || !payload.ok) {
+                    ratingElo.textContent = 'N/A';
+                    ratingFormat.textContent = 'Geen rating gevonden';
+                    return;
+                }
+                if (!payload.rating) {
+                    ratingElo.textContent = 'N/A';
+                    ratingFormat.textContent = 'Geen ladder data';
+                    return;
+                }
+                ratingElo.textContent = Math.round(payload.rating.elo).toString();
+                const format = payload.rating.format || 'Unknown format';
+                const normalizedFormat = format.toLowerCase();
+                if (normalizedFormat.includes('randomdoubles')) {
+                    ratingFormat.textContent = 'gen9regfdoubles best of 3';
+                } else {
+                    ratingFormat.textContent = format;
+                }
+            } catch (err) {
+                ratingElo.textContent = 'N/A';
+                ratingFormat.textContent = 'Kan rating niet laden';
+            }
+        };
+
+        loadRating();
     </script>
 </body>
 </html>
