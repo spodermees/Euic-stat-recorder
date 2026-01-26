@@ -32,7 +32,7 @@
                     <form class="form-grid" method="get" action="{{ url_for('index') }}" style="margin-top:16px;">
                         <label>
                             Mijn Pokémon
-                            <select name="attacker" required>
+                            <select name="attacker" class="js-searchable-select" required>
                                 <option value="" disabled {% if not attacker %}selected{% endif %}>Selecteer mijn Pokémon</option>
                                 {% for name in attacker_options %}
                                     <option value="{{ name }}" {% if attacker == name %}selected{% endif %}>{{ name }}</option>
@@ -41,7 +41,7 @@
                         </label>
                         <label>
                             Tegenstander Pokémon
-                            <select name="defender" required>
+                            <select name="defender" class="js-searchable-select" required>
                                 <option value="" disabled {% if not defender %}selected{% endif %}>Selecteer tegenstander</option>
                                 {% for name in opponent_options %}
                                     <option value="{{ name }}" {% if defender == name %}selected{% endif %}>{{ name }}</option>
@@ -195,6 +195,7 @@
         const replayBulkStatus = document.getElementById('replay-bulk-status');
         const replayFileForm = document.getElementById('replay-file-form');
         const replayFileStatus = document.getElementById('replay-file-status');
+        const searchableSelects = document.querySelectorAll('.js-searchable-select');
 
         replayForm?.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -298,6 +299,91 @@
             } catch (err) {
                 replayFileStatus.textContent = 'replays.txt import failed.';
             }
+        });
+
+        const normalizeText = (value) => (value || '').toLowerCase();
+
+        const closeAllDropdowns = () => {
+            document.querySelectorAll('.searchable-select.open').forEach((wrapper) => {
+                wrapper.classList.remove('open');
+            });
+        };
+
+        document.addEventListener('click', (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) return;
+            if (!target.closest('.searchable-select')) {
+                closeAllDropdowns();
+            }
+        });
+
+        searchableSelects.forEach((select) => {
+            const options = Array.from(select.options).filter((option) => option.value);
+            const placeholderOption = Array.from(select.options).find((option) => !option.value);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'searchable-select';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'searchable-input';
+            input.placeholder = placeholderOption?.textContent?.trim() || 'Selecteer...';
+            input.autocomplete = 'off';
+
+            const menu = document.createElement('div');
+            menu.className = 'searchable-menu';
+
+            const list = document.createElement('div');
+            list.className = 'searchable-options';
+
+            const buildOptions = (query = '') => {
+                list.innerHTML = '';
+                const normalizedQuery = normalizeText(query).trim();
+                const filtered = options.filter((option) => {
+                    return !normalizedQuery || normalizeText(option.textContent).includes(normalizedQuery);
+                });
+
+                if (!filtered.length) {
+                    const empty = document.createElement('div');
+                    empty.className = 'searchable-empty';
+                    empty.textContent = 'Geen resultaten.';
+                    list.appendChild(empty);
+                    return;
+                }
+
+                filtered.forEach((option) => {
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = 'searchable-option';
+                    item.textContent = option.textContent;
+                    item.dataset.value = option.value;
+                    item.addEventListener('click', () => {
+                        select.value = option.value;
+                        input.value = option.textContent;
+                        wrapper.classList.remove('open');
+                    });
+                    list.appendChild(item);
+                });
+            };
+
+            buildOptions();
+
+            input.addEventListener('input', () => {
+                buildOptions(input.value);
+                wrapper.classList.add('open');
+            });
+
+            input.addEventListener('focus', () => {
+                closeAllDropdowns();
+                buildOptions(input.value);
+                wrapper.classList.add('open');
+            });
+
+            menu.appendChild(list);
+            wrapper.appendChild(input);
+            wrapper.appendChild(menu);
+
+            select.classList.add('searchable-hidden');
+            select.parentNode.insertBefore(wrapper, select);
         });
     </script>
 </body>
