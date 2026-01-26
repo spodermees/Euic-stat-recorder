@@ -3,17 +3,286 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Showdown Recorder</title>
-    <meta http-equiv="refresh" content="0; url=./docs/">
-    <link rel="canonical" href="./docs/">
-    <style>
-        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 40px; }
-        a { color: #2563eb; }
-    </style>
+    <title>Showdown Recorder (Static)</title>
+    <link rel="stylesheet" href="docs/static/style.css">
+    <link rel="manifest" href="docs/static/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="docs/static/app-icon.svg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Showdown Recorder">
+    <meta name="theme-color" content="#0f172a">
 </head>
 <body>
-    <h1>Showdown Recorder</h1>
-    <p>Redirecting to the static site...</p>
-    <p>If you are not redirected, open <a href="./docs/">the static site</a>.</p>
+    <header class="app-header">
+        <div>
+            <h1>Showdown Recorder</h1>
+            <p>Static snapshot for mobile viewing.</p>
+        </div>
+        <div class="stat">
+            <span>Total events</span>
+            <strong>23</strong>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card">
+            <h2>Overall damage (all matches)</h2>
+            
+                <div class="summary">
+                    <span class="chip damage">Min 0.0%</span>
+                    <span class="chip damage">Max 83.0%</span>
+                    <span class="chip">Avg 26.2%</span>
+                    <span class="muted">23 hits</span>
+                </div>
+
+                <form class="form-grid" id="damage-form" style="margin-top:16px;">
+                    <label>
+                        Mijn Pokémon
+                        <select name="attacker" id="attacker-select" required>
+                            <option value="" disabled selected>Selecteer mijn Pokémon</option>
+                            
+                                <option value="Eddie bear">Eddie bear</option>
+                            
+                                <option value="TornWithoutOgre">TornWithoutOgre</option>
+                            
+                                <option value="Does not care">Does not care</option>
+                            
+                                <option value="The healing moon">The healing moon</option>
+                            
+                                <option value="The stupid cat">The stupid cat</option>
+                            
+                                <option value="Giraffe">Giraffe</option>
+                            
+                        </select>
+                    </label>
+                    <label>
+                        Tegenstander Pokémon
+                        <select name="defender" id="defender-select" required>
+                            <option value="" disabled selected>Selecteer tegenstander</option>
+                            
+                                <option value="Amoonguss">Amoonguss</option>
+                            
+                                <option value="Incineroar">Incineroar</option>
+                            
+                                <option value="Landorus">Landorus</option>
+                            
+                                <option value="Pelipper">Pelipper</option>
+                            
+                                <option value="Urshifu">Urshifu</option>
+                            
+                        </select>
+                    </label>
+                </form>
+
+                <div class="damage-dual" id="damage-output">
+                    <div>
+                        <h3>Mijn Pokémon → Tegenstander</h3>
+                        <p class="muted">Selecteer twee Pokémon om de dmg range te zien.</p>
+                    </div>
+                    <div>
+                        <h3>Tegenstander → Mijn Pokémon</h3>
+                        <p class="muted">Selecteer twee Pokémon om de dmg range te zien.</p>
+                    </div>
+                </div>
+            
+        </section>
+
+        <section class="card">
+            <h2>Matches</h2>
+            
+                <div class="list">
+                    
+                        <div class="list-item">
+                            <div>
+                                <strong>Replay</strong>
+                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-25T15:20:28</span>
+                                <span>Winner: spodermees · Won</span>
+                            </div>
+                            <div class="list-actions">
+                                
+                                    <span class="chip">Geen replay</span>
+                                
+                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                            </div>
+                        </div>
+                    
+                        <div class="list-item">
+                            <div>
+                                <strong>Replay</strong>
+                                <span>Unknown format · 2026-01-25T15:17:29</span>
+                                <span>Winner: Unknown</span>
+                            </div>
+                            <div class="list-actions">
+                                
+                                    <span class="chip">Geen replay</span>
+                                
+                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                            </div>
+                        </div>
+                    
+                        <div class="list-item">
+                            <div>
+                                <strong>Replay</strong>
+                                <span>Unknown format · 2026-01-25T15:09:21</span>
+                                <span>Winner: Unknown</span>
+                            </div>
+                            <div class="list-actions">
+                                
+                                    <span class="chip">Geen replay</span>
+                                
+                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                            </div>
+                        </div>
+                    
+                        <div class="list-item">
+                            <div>
+                                <strong>Replay</strong>
+                                <span>Unknown format · 2026-01-25T15:05:21</span>
+                                <span>Winner: Unknown</span>
+                            </div>
+                            <div class="list-actions">
+                                
+                                    <span class="chip">Geen replay</span>
+                                
+                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                            </div>
+                        </div>
+                    
+                        <div class="list-item">
+                            <div>
+                                <strong>Replay</strong>
+                                <span>Unknown format · 2026-01-25T15:01:18</span>
+                                <span>Winner: Unknown</span>
+                            </div>
+                            <div class="list-actions">
+                                
+                                    <span class="chip">Geen replay</span>
+                                
+                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                            </div>
+                        </div>
+                    
+                        <div class="list-item">
+                            <div>
+                                <strong>Live</strong>
+                                <span>Unknown format · 2026-01-25T14:27:35</span>
+                                <span>Winner: Unknown</span>
+                            </div>
+                            <div class="list-actions">
+                                
+                                    <span class="chip">Geen replay</span>
+                                
+                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                            </div>
+                        </div>
+                    
+                </div>
+            
+        </section>
+    </main>
+
+    <script type="application/json" id="damage-rows-data">[{"actor": null, "target": "Giraffe", "move": null, "value_low": 59.0, "value_high": 59.0, "replay_url": null}, {"actor": null, "target": "Giraffe", "move": null, "value_low": 9.0, "value_high": 9.0, "replay_url": null}, {"actor": null, "target": "Pelipper", "move": null, "value_low": 56.99999999999999, "value_high": 56.99999999999999, "replay_url": null}, {"actor": null, "target": "Landorus", "move": null, "value_low": 56.99999999999999, "value_high": 56.99999999999999, "replay_url": null}, {"actor": null, "target": "Does not care", "move": null, "value_low": 1.0, "value_high": 1.0, "replay_url": null}, {"actor": null, "target": "Pelipper", "move": null, "value_low": 8.0, "value_high": 8.0, "replay_url": null}, {"actor": null, "target": "Amoonguss", "move": null, "value_low": 28.999999999999996, "value_high": 28.999999999999996, "replay_url": null}, {"actor": "Incineroar", "target": "TornWithoutOgre", "move": "Fake Out", "value_low": 83.0, "value_high": 83.0, "replay_url": null}, {"actor": "Landorus", "target": "Giraffe", "move": "Sludge Bomb", "value_low": 41.0, "value_high": 41.0, "replay_url": null}, {"actor": "Giraffe", "target": "Urshifu", "move": "Thunderclap", "value_low": 13.0, "value_high": 13.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 44.0, "value_high": 44.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 35.0, "value_high": 35.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 27.0, "value_high": 27.0, "replay_url": null}, {"actor": "Pelipper", "target": "Giraffe", "move": "Weather Ball", "value_low": 7.000000000000001, "value_high": 7.000000000000001, "replay_url": null}, {"actor": "TornWithoutOgre", "target": "Pelipper", "move": "Bleakwind Storm", "value_low": 57.99999999999999, "value_high": 57.99999999999999, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 0.0, "value_high": 0.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 8.0, "value_high": 8.0, "replay_url": null}, {"actor": "Pelipper", "target": "Giraffe", "move": "Weather Ball", "value_low": 20.0, "value_high": 20.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 0.0, "value_high": 0.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 8.0, "value_high": 8.0, "replay_url": null}, {"actor": "Pelipper", "target": "Giraffe", "move": "Weather Ball", "value_low": 20.0, "value_high": 20.0, "replay_url": null}]</script>
+    <script>
+        const damageRows = JSON.parse(document.getElementById('damage-rows-data')?.textContent || '[]');
+        const attackerSelect = document.getElementById('attacker-select');
+        const defenderSelect = document.getElementById('defender-select');
+        const output = document.getElementById('damage-output');
+
+        const normalize = (value) => (value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        const isFiniteNumber = (value) => Number.isFinite(value);
+        const formatPercent = (value) => (isFiniteNumber(value) ? `${value.toFixed(1)}%` : '—');
+
+        const buildBreakdown = (attacker, defender) => {
+            const buckets = {};
+            damageRows.forEach((row) => {
+                if (!row.actor || !row.target) return;
+                if (normalize(row.actor) !== normalize(attacker)) return;
+                if (normalize(row.target) !== normalize(defender)) return;
+                const move = row.move || '-';
+                const key = move;
+                if (!buckets[key]) {
+                    buckets[key] = {
+                        move,
+                        min_low: null,
+                        max_high: null,
+                        count: 0,
+                        replay_url: row.replay_url || ''
+                    };
+                }
+                const entry = buckets[key];
+                entry.count += 1;
+                if (isFiniteNumber(row.value_low)) {
+                    entry.min_low = isFiniteNumber(entry.min_low)
+                        ? Math.min(entry.min_low, row.value_low)
+                        : row.value_low;
+                }
+                if (isFiniteNumber(row.value_high)) {
+                    entry.max_high = isFiniteNumber(entry.max_high)
+                        ? Math.max(entry.max_high, row.value_high)
+                        : row.value_high;
+                }
+                if (!entry.replay_url && row.replay_url) {
+                    entry.replay_url = row.replay_url;
+                }
+            });
+            return Object.values(buckets).sort((a, b) => b.max_high - a.max_high);
+        };
+
+        const renderList = (title, items) => {
+            if (!items.length) {
+                return `
+                    <div>
+                        <h3>${title}</h3>
+                        <p class="muted">Geen dmg gevonden.</p>
+                    </div>
+                `;
+            }
+
+            const rows = items.map((item) => {
+                const replay = item.replay_url
+                    ? `<a class="chip" href="${item.replay_url}" target="_blank" rel="noreferrer">Replay</a>`
+                    : `<span class="chip">Geen replay</span>`;
+                return `
+                    <div class="list-item">
+                        <div>
+                            <strong>${item.move}</strong>
+                            <span>${formatPercent(item.min_low)} - ${formatPercent(item.max_high)}</span>
+                            <span class="muted">${item.count} hits</span>
+                        </div>
+                        <div class="list-actions">
+                            ${replay}
+                            <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div>
+                    <h3>${title}</h3>
+                    <div class="list">
+                        ${rows}
+                    </div>
+                </div>
+            `;
+        };
+
+        const update = () => {
+            const attacker = attackerSelect.value;
+            const defender = defenderSelect.value;
+            if (!attacker || !defender) {
+                return;
+            }
+            const forward = buildBreakdown(attacker, defender);
+            const reverse = buildBreakdown(defender, attacker);
+            output.innerHTML = [
+                renderList(`${attacker} → ${defender}`, forward),
+                renderList(`${defender} → ${attacker}`, reverse)
+            ].join('');
+        };
+
+        attackerSelect?.addEventListener('change', update);
+        defenderSelect?.addEventListener('change', update);
+    </script>
 </body>
 </html>
