@@ -1295,6 +1295,34 @@ def api_rating_history():
             }
         )
 
+    if not points:
+        raw_rows = db.execute(
+            """
+            SELECT log_lines.raw_line, log_lines.created_at, matches.format
+            FROM log_lines
+            LEFT JOIN matches ON matches.id = log_lines.match_id
+            WHERE log_lines.raw_line LIKE '%rating:%'
+            ORDER BY log_lines.id ASC
+            LIMIT 800
+            """,
+        ).fetchall()
+        for row in raw_rows:
+            rating_match = RAW_RATING_PATTERN.match(row["raw_line"])
+            if not rating_match:
+                continue
+            if normalize_name(rating_match.group("user")) != normalized_user:
+                continue
+            if normalized_format and normalize_name(row["format"] or "") != normalized_format:
+                continue
+            points.append(
+                {
+                    "user": rating_match.group("user").strip(),
+                    "elo": int(rating_match.group("after")),
+                    "format": row["format"],
+                    "created_at": row["created_at"],
+                }
+            )
+
     return {
         "ok": True,
         "user": username,

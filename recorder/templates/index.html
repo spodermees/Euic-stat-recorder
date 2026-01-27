@@ -217,6 +217,7 @@
         const ratingChartRange = document.getElementById('rating-chart-range');
         let ratingHistoryLoaded = false;
         let ratingHistoryPoints = [];
+        let ratingChartMeta = null;
 
         replayForm?.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -452,7 +453,7 @@
                 return;
             }
 
-            ratingChartEmpty.style.display = points.length > 1 ? 'none' : 'block';
+            ratingChartEmpty.style.display = 'none';
 
             const elos = points.map((point) => point.elo);
             let minElo = Math.min(...elos);
@@ -463,44 +464,70 @@
             }
             ratingChartRange.textContent = `${minElo} - ${maxElo}`;
 
-            const padding = 18;
-            const width = ratingCanvas.width - padding * 2;
-            const height = ratingCanvas.height - padding * 2;
+            const paddingX = 34;
+            const paddingY = 18;
+            const width = ratingCanvas.width - paddingX * 2;
+            const height = ratingCanvas.height - paddingY * 2;
+
+            const tickStep = 50;
+            const tickMin = Math.floor(minElo / tickStep) * tickStep;
+            const tickMax = Math.ceil(maxElo / tickStep) * tickStep;
 
             ctx.strokeStyle = '#1f2538';
             ctx.lineWidth = 1;
             ctx.beginPath();
-            for (let i = 0; i <= 2; i += 1) {
-                const y = padding + (height / 2) * i;
-                ctx.moveTo(padding, y);
-                ctx.lineTo(padding + width, y);
+            for (let value = tickMin; value <= tickMax; value += tickStep) {
+                const normalized = (value - minElo) / (maxElo - minElo || 1);
+                const y = paddingY + height - normalized * height;
+                ctx.moveTo(paddingX, y);
+                ctx.lineTo(paddingX + width, y);
             }
             ctx.stroke();
+
+            ctx.fillStyle = '#9aa4c7';
+            ctx.font = '10px "Segoe UI", system-ui, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            for (let value = tickMin; value <= tickMax; value += tickStep) {
+                const normalized = (value - minElo) / (maxElo - minElo || 1);
+                const y = paddingY + height - normalized * height;
+                const clampedY = Math.min(Math.max(y, paddingY), paddingY + height);
+                ctx.fillText(String(value), paddingX - 8, clampedY);
+            }
 
             ctx.strokeStyle = '#4c6fff';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            points.forEach((point, index) => {
-                const x = padding + (width * index) / Math.max(points.length - 1, 1);
+            const plotted = points.map((point, index) => {
+                const x = paddingX + (width * index) / Math.max(points.length - 1, 1);
                 const normalized = (point.elo - minElo) / (maxElo - minElo || 1);
-                const y = padding + height - normalized * height;
+                const y = paddingY + height - normalized * height;
+                return { x, y, elo: point.elo, created_at: point.created_at };
+            });
+
+            plotted.forEach((point, index) => {
                 if (index === 0) {
-                    ctx.moveTo(x, y);
+                    ctx.moveTo(point.x, point.y);
                 } else {
-                    ctx.lineTo(x, y);
+                    ctx.lineTo(point.x, point.y);
                 }
             });
             ctx.stroke();
 
             ctx.fillStyle = '#8cc6ff';
-            points.forEach((point, index) => {
-                const x = padding + (width * index) / Math.max(points.length - 1, 1);
-                const normalized = (point.elo - minElo) / (maxElo - minElo || 1);
-                const y = padding + height - normalized * height;
+            plotted.forEach((point) => {
                 ctx.beginPath();
-                ctx.arc(x, y, 2.8, 0, Math.PI * 2);
+                ctx.arc(point.x, point.y, 2.8, 0, Math.PI * 2);
                 ctx.fill();
             });
+
+            ratingChartMeta = {
+                paddingX,
+                paddingY,
+                width,
+                height,
+                points: plotted,
+            };
         };
 
         const loadRatingHistory = async () => {
@@ -523,6 +550,43 @@
                 ratingHistoryPoints = [];
                 drawRatingChart();
             }
+        };
+
+        const formatDate = (value) => {
+            if (!value) return '';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return value;
+            return date.toLocaleDateString('nl-NL', { day: '2-digit', month: 'short' });
+        };
+
+        const updateRatingTooltip = (event) => {
+            if (!ratingChart || !ratingCanvas || !ratingChartMeta) return;
+            const rect = ratingCanvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const scaleX = ratingCanvas.width / rect.width;
+            const scaleY = ratingCanvas.height / rect.height;
+            const canvasX = x * scaleX;
+            const canvasY = y * scaleY;
+
+            let hit = null;
+            for (const point of ratingChartMeta.points) {
+                const dx = canvasX - point.x;
+                const dy = canvasY - point.y;
+                if (Math.sqrt(dx * dx + dy * dy) <= 6) {
+                    hit = point;
+                    break;
+                }
+            }
+
+            if (!hit) {
+                ratingChart.removeAttribute('data-tooltip');
+                return;
+            }
+
+            ratingChart.dataset.tooltip = `${hit.elo}${hit.created_at ? ` · ${formatDate(hit.created_at)}` : ''}`;
+            ratingChart.style.setProperty('--tooltip-x', `${Math.round(hit.x)}px`);
+            ratingChart.style.setProperty('--tooltip-y', `${Math.round(hit.y)}px`);
         };
 
         const closeRatingChart = () => {
@@ -556,6 +620,11 @@
                 event.preventDefault();
                 toggleRatingChart();
             }
+        });
+
+        ratingCanvas?.addEventListener('mousemove', updateRatingTooltip);
+        ratingCanvas?.addEventListener('mouseleave', () => {
+            ratingChart?.removeAttribute('data-tooltip');
         });
 
         document.addEventListener('click', (event) => {

@@ -242,6 +242,23 @@ button:hover,
     z-index: 20;
 }
 
+.rating-chart[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: var(--tooltip-x, 0px);
+    top: var(--tooltip-y, 0px);
+    transform: translate(-50%, -120%);
+    background: #0b0f1c;
+    color: #e6e9f2;
+    border: 1px solid #2b334b;
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 11px;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+}
+
 .rating-chart-header {
     display: flex;
     justify-content: space-between;
