@@ -163,6 +163,36 @@ def init_db() -> None:
     )
     _ensure_column(db, "events", "move", "TEXT")
     _ensure_column(db, "events", "turn", "INTEGER")
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS prep_notes (
+            section TEXT PRIMARY KEY,
+            content TEXT,
+            updated_at TEXT NOT NULL
+        );
+        """
+    )
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS prep_matchups (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+        """
+    )
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS prep_matchup_notes (
+            matchup_id INTEGER NOT NULL,
+            section TEXT NOT NULL,
+            content TEXT,
+            updated_at TEXT NOT NULL,
+            PRIMARY KEY (matchup_id, section),
+            FOREIGN KEY(matchup_id) REFERENCES prep_matchups(id)
+        );
+        """
+    )
     db.commit()
 
 
@@ -679,6 +709,54 @@ def update_match_state(match_id: int, state: dict) -> None:
     db.commit()
 
 
+PREP_SECTIONS = [
+    "Lead",
+    "Wincon",
+    "Threats",
+    "Tera",
+    "Speed control",
+    "Items/sets",
+    "Notes",
+]
+
+
+def get_prep_notes() -> dict[str, str]:
+    db = get_db()
+    rows = db.execute("SELECT section, content FROM prep_notes").fetchall()
+    return {row["section"]: row["content"] or "" for row in rows}
+
+
+def save_prep_notes(payload: dict[str, str]) -> None:
+    db = get_db()
+    now = datetime.utcnow().isoformat(timespec="seconds")
+    for section, content in payload.items():
+        db.execute(
+            """
+            INSERT OR REPLACE INTO prep_notes (section, content, updated_at)
+            VALUES (?, ?, ?)
+            """,
+            (section, content, now),
+        )
+    db.commit()
+
+
+def list_prep_matchups() -> list[dict]:
+    db = get_db()
+    rows = db.execute(
+        "SELECT id, title, updated_at FROM prep_matchups ORDER BY updated_at DESC, id DESC"
+    ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def get_prep_matchup_notes(matchup_id: int) -> dict[str, str]:
+    db = get_db()
+    rows = db.execute(
+        "SELECT section, content FROM prep_matchup_notes WHERE matchup_id = ?",
+        (matchup_id,),
+    ).fetchall()
+    return {row["section"]: row["content"] or "" for row in rows}
+
+
 @app.route("/")
 def index():
     db = get_db()
@@ -795,6 +873,89 @@ def index():
         attacker_options=attacker_options,
         opponent_options=opponent_options,
     )
+
+
+@app.route("/prep", methods=["GET", "POST"])
+def prep():
+    matchups = list_prep_matchups()
+    return render_template(
+        "prep.html",
+        sections=PREP_SECTIONS,
+        matchups=matchups,
+    )
+
+
+@app.route("/api/prep_matchups", methods=["POST"])
+def api_create_prep_matchup():
+    data = request.get_json(silent=True) or {}
+    title = str(data.get("title", "")).strip()
+    if not title:
+        return {"ok": False, "error": "missing title"}, 400
+    db = get_db()
+    now = datetime.utcnow().isoformat(timespec="seconds")
+    cursor = db.execute(
+        "INSERT INTO prep_matchups (title, updated_at) VALUES (?, ?)",
+        (title, now),
+    )
+    db.commit()
+    return {"ok": True, "id": cursor.lastrowid, "title": title}
+
+
+@app.route("/api/prep_matchups/<int:matchup_id>", methods=["GET"])
+def api_get_prep_matchup(matchup_id: int):
+    db = get_db()
+    row = db.execute(
+        "SELECT id, title, updated_at FROM prep_matchups WHERE id = ?",
+        (matchup_id,),
+    ).fetchone()
+    if row is None:
+        return {"ok": False, "error": "not found"}, 404
+    notes = get_prep_matchup_notes(matchup_id)
+    return {
+        "ok": True,
+        "matchup": dict(row),
+        "notes": notes,
+    }
+
+
+@app.route("/api/prep_matchups/<int:matchup_id>", methods=["POST"])
+def api_update_prep_matchup(matchup_id: int):
+    data = request.get_json(silent=True) or {}
+    notes = data.get("notes") or {}
+    title = str(data.get("title", "")).strip()
+    db = get_db()
+    now = datetime.utcnow().isoformat(timespec="seconds")
+
+    existing = db.execute(
+        "SELECT id FROM prep_matchups WHERE id = ?",
+        (matchup_id,),
+    ).fetchone()
+    if existing is None:
+        return {"ok": False, "error": "not found"}, 404
+
+    if title:
+        db.execute(
+            "UPDATE prep_matchups SET title = ?, updated_at = ? WHERE id = ?",
+            (title, now, matchup_id),
+        )
+    else:
+        db.execute(
+            "UPDATE prep_matchups SET updated_at = ? WHERE id = ?",
+            (now, matchup_id),
+        )
+
+    for section, content in notes.items():
+        if section not in PREP_SECTIONS:
+            continue
+        db.execute(
+            """
+            INSERT OR REPLACE INTO prep_matchup_notes (matchup_id, section, content, updated_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (matchup_id, section, str(content).strip(), now),
+        )
+    db.commit()
+    return {"ok": True}
 
 
 @app.route("/match/<int:match_id>")

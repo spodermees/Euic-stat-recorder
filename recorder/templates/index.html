@@ -12,6 +12,9 @@
             <h1>Showdown Recorder</h1>
             <p>Upload a chat log to extract items and damage ranges.</p>
         </div>
+        <div class="actions">
+            <a class="button" href="{{ url_for('prep') }}">Prep</a>
+        </div>
         <div class="stat">
             <span>Total events</span>
             <strong>{{ totals.total_events or 0 }}</strong>

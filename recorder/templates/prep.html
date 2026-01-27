@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Matchup prep | Showdown Recorder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="app-header">
+        <div>
+            <h1>Matchup prep</h1>
+            <p>Werk je matchup ideëen uit in grote blokken.</p>
+        </div>
+        <div class="actions">
+            <a class="button" href="{{ url_for('index') }}">Back</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card">
+            <h2>Matchups</h2>
+            <div class="prep-toolbar">
+                <input type="text" id="prep-search" placeholder="Zoek matchup...">
+                <form class="prep-create" id="prep-create-form">
+                    <input type="text" name="title" placeholder="Nieuw matchup (bv. Hard Trickroom)" required>
+                    <button type="submit">Toevoegen</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="prep-grid" id="prep-grid">
+            {% for matchup in matchups %}
+                <button class="prep-tile" type="button" data-matchup-id="{{ matchup.id }}">
+                    <span class="prep-title">{{ matchup.title }}</span>
+                    <span class="muted">Laatst bijgewerkt {{ matchup.updated_at }}</span>
+                </button>
+            {% else %}
+                <div class="card">
+                    <p class="muted">Nog geen matchups. Voeg er eentje toe.</p>
+                </div>
+            {% endfor %}
+        </section>
+    </main>
+
+    <div class="modal" id="prep-modal" aria-hidden="true">
+        <div class="modal-content">
+            <header class="modal-header">
+                <input type="text" id="prep-modal-title" placeholder="Matchup titel">
+                <button type="button" class="button" id="prep-modal-close">Sluiten</button>
+            </header>
+            <div class="modal-body" id="prep-modal-body">
+                {% for section in sections %}
+                    <div class="prep-field">
+                        <label>{{ section }}</label>
+                        <textarea data-section="{{ section }}" rows="4" placeholder="Schrijf je ideeën..."></textarea>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="prep-modal-save">Opslaan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const prepGrid = document.getElementById('prep-grid');
+        const prepCreateForm = document.getElementById('prep-create-form');
+        const prepSearch = document.getElementById('prep-search');
+        const prepModal = document.getElementById('prep-modal');
+        const prepModalTitle = document.getElementById('prep-modal-title');
+        const prepModalClose = document.getElementById('prep-modal-close');
+        const prepModalSave = document.getElementById('prep-modal-save');
+        const prepModalBody = document.getElementById('prep-modal-body');
+        let activeMatchupId = null;
+
+        const openModal = () => {
+            if (!prepModal) return;
+            prepModal.classList.add('open');
+            prepModal.setAttribute('aria-hidden', 'false');
+        };
+
+        const closeModal = () => {
+            if (!prepModal) return;
+            prepModal.classList.remove('open');
+            prepModal.setAttribute('aria-hidden', 'true');
+        };
+
+        const loadMatchup = async (matchupId) => {
+            const response = await fetch(`/api/prep_matchups/${matchupId}`);
+            const payload = await response.json();
+            if (!response.ok || !payload.ok) return;
+            activeMatchupId = matchupId;
+            prepModalTitle.value = payload.matchup.title || '';
+            prepModalBody.querySelectorAll('textarea[data-section]').forEach((textarea) => {
+                const section = textarea.dataset.section;
+                textarea.value = payload.notes?.[section] || '';
+            });
+            openModal();
+        };
+
+        prepGrid?.addEventListener('click', (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) return;
+            const tile = target.closest('.prep-tile');
+            if (!tile) return;
+            const matchupId = tile.dataset.matchupId;
+            if (!matchupId) return;
+            loadMatchup(matchupId);
+        });
+
+        const filterTiles = () => {
+            if (!prepSearch || !prepGrid) return;
+            const query = prepSearch.value.trim().toLowerCase();
+            prepGrid.querySelectorAll('.prep-tile').forEach((tile) => {
+                const title = tile.querySelector('.prep-title')?.textContent?.toLowerCase() || '';
+                tile.style.display = !query || title.includes(query) ? '' : 'none';
+            });
+        };
+
+        prepSearch?.addEventListener('input', filterTiles);
+
+        prepCreateForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const input = prepCreateForm.querySelector('input[name="title"]');
+            const title = input?.value?.trim();
+            if (!title) return;
+            const response = await fetch('/api/prep_matchups', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title })
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.ok) return;
+            input.value = '';
+            window.location.reload();
+        });
+
+        prepModalSave?.addEventListener('click', async () => {
+            if (!activeMatchupId) return;
+            const notes = {};
+            prepModalBody.querySelectorAll('textarea[data-section]').forEach((textarea) => {
+                notes[textarea.dataset.section] = textarea.value;
+            });
+            const response = await fetch(`/api/prep_matchups/${activeMatchupId}` , {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: prepModalTitle.value.trim(),
+                    notes
+                })
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.ok) return;
+            window.location.reload();
+        });
+
+        prepModalClose?.addEventListener('click', closeModal);
+        prepModal?.addEventListener('click', (event) => {
+            if (event.target === prepModal) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
