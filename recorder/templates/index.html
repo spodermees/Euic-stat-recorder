@@ -16,10 +16,21 @@
             <span>Total events</span>
             <strong>{{ totals.total_events or 0 }}</strong>
         </div>
-        <div class="rating" aria-live="polite">
-            <span>Current rating</span>
-            <strong id="rating-elo">...</strong>
-            <small id="rating-format" class="muted">Loading...</small>
+        <div class="rating-wrapper" id="rating-wrapper">
+            <div class="rating rating-clickable" id="rating-card" aria-live="polite" role="button" tabindex="0" aria-expanded="false">
+                <span>Current rating</span>
+                <strong id="rating-elo">...</strong>
+                <small id="rating-format" class="muted">Loading...</small>
+                <small class="muted">Klik voor graph</small>
+            </div>
+            <div class="rating-chart" id="rating-chart" role="dialog" aria-label="Rating history" hidden>
+                <div class="rating-chart-header">
+                    <span>Rating history</span>
+                    <span id="rating-chart-range" class="muted"></span>
+                </div>
+                <canvas id="rating-canvas" width="240" height="130"></canvas>
+                <div class="rating-chart-empty muted" id="rating-chart-empty">Nog geen rating data.</div>
+            </div>
         </div>
     </header>
 
@@ -198,6 +209,14 @@
         const searchableSelects = document.querySelectorAll('.js-searchable-select');
         const ratingElo = document.getElementById('rating-elo');
         const ratingFormat = document.getElementById('rating-format');
+        const ratingWrapper = document.getElementById('rating-wrapper');
+        const ratingCard = document.getElementById('rating-card');
+        const ratingChart = document.getElementById('rating-chart');
+        const ratingCanvas = document.getElementById('rating-canvas');
+        const ratingChartEmpty = document.getElementById('rating-chart-empty');
+        const ratingChartRange = document.getElementById('rating-chart-range');
+        let ratingHistoryLoaded = false;
+        let ratingHistoryPoints = [];
 
         replayForm?.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -418,6 +437,134 @@
         };
 
         loadRating();
+
+        const drawRatingChart = () => {
+            if (!ratingCanvas || !ratingChartEmpty || !ratingChartRange) return;
+            const ctx = ratingCanvas.getContext('2d');
+            if (!ctx) return;
+
+            const points = ratingHistoryPoints;
+            ctx.clearRect(0, 0, ratingCanvas.width, ratingCanvas.height);
+
+            if (!points.length) {
+                ratingChartEmpty.style.display = 'block';
+                ratingChartRange.textContent = '';
+                return;
+            }
+
+            ratingChartEmpty.style.display = points.length > 1 ? 'none' : 'block';
+
+            const elos = points.map((point) => point.elo);
+            let minElo = Math.min(...elos);
+            let maxElo = Math.max(...elos);
+            if (minElo === maxElo) {
+                minElo -= 10;
+                maxElo += 10;
+            }
+            ratingChartRange.textContent = `${minElo} - ${maxElo}`;
+
+            const padding = 18;
+            const width = ratingCanvas.width - padding * 2;
+            const height = ratingCanvas.height - padding * 2;
+
+            ctx.strokeStyle = '#1f2538';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let i = 0; i <= 2; i += 1) {
+                const y = padding + (height / 2) * i;
+                ctx.moveTo(padding, y);
+                ctx.lineTo(padding + width, y);
+            }
+            ctx.stroke();
+
+            ctx.strokeStyle = '#4c6fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            points.forEach((point, index) => {
+                const x = padding + (width * index) / Math.max(points.length - 1, 1);
+                const normalized = (point.elo - minElo) / (maxElo - minElo || 1);
+                const y = padding + height - normalized * height;
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+
+            ctx.fillStyle = '#8cc6ff';
+            points.forEach((point, index) => {
+                const x = padding + (width * index) / Math.max(points.length - 1, 1);
+                const normalized = (point.elo - minElo) / (maxElo - minElo || 1);
+                const y = padding + height - normalized * height;
+                ctx.beginPath();
+                ctx.arc(x, y, 2.8, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        };
+
+        const loadRatingHistory = async () => {
+            if (ratingHistoryLoaded) return;
+            ratingHistoryLoaded = true;
+            try {
+                const response = await fetch('/api/rating_history?user=spodermees');
+                const payload = await response.json();
+                if (!response.ok || !payload.ok) {
+                    ratingHistoryPoints = [];
+                    drawRatingChart();
+                    return;
+                }
+                ratingHistoryPoints = (payload.points || []).map((point) => ({
+                    elo: Number(point.elo),
+                    created_at: point.created_at,
+                }));
+                drawRatingChart();
+            } catch (err) {
+                ratingHistoryPoints = [];
+                drawRatingChart();
+            }
+        };
+
+        const closeRatingChart = () => {
+            ratingWrapper?.classList.remove('open');
+            if (ratingChart) {
+                ratingChart.hidden = true;
+            }
+            ratingCard?.setAttribute('aria-expanded', 'false');
+        };
+
+        const toggleRatingChart = async () => {
+            if (!ratingWrapper || !ratingChart || !ratingCard) return;
+            const isOpen = ratingWrapper.classList.contains('open');
+            if (isOpen) {
+                closeRatingChart();
+                return;
+            }
+            ratingWrapper.classList.add('open');
+            ratingChart.hidden = false;
+            ratingCard.setAttribute('aria-expanded', 'true');
+            await loadRatingHistory();
+        };
+
+        ratingCard?.addEventListener('click', (event) => {
+            event.preventDefault();
+            toggleRatingChart();
+        });
+
+        ratingCard?.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                toggleRatingChart();
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) return;
+            if (!target.closest('#rating-wrapper')) {
+                closeRatingChart();
+            }
+        });
     </script>
 </body>
 </html>

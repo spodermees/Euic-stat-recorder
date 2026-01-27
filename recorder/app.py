@@ -1259,6 +1259,49 @@ def api_showdown_rating():
     }
 
 
+@app.route("/api/rating_history")
+def api_rating_history():
+    username = (request.args.get("user") or "").strip()
+    if not username:
+        return {"ok": False, "error": "missing user"}, 400
+
+    format_filter = (request.args.get("format") or "").strip()
+    normalized_user = normalize_name(username)
+    normalized_format = normalize_name(format_filter) if format_filter else ""
+
+    db = get_db()
+    rows = db.execute(
+        """
+        SELECT rating_user, rating_after, format, created_at
+        FROM matches
+        WHERE rating_user IS NOT NULL AND rating_after IS NOT NULL
+        ORDER BY id ASC
+        LIMIT 500
+        """,
+    ).fetchall()
+
+    points = []
+    for row in rows:
+        if normalize_name(row["rating_user"]) != normalized_user:
+            continue
+        if normalized_format and normalize_name(row["format"] or "") != normalized_format:
+            continue
+        points.append(
+            {
+                "user": row["rating_user"],
+                "elo": int(row["rating_after"]),
+                "format": row["format"],
+                "created_at": row["created_at"],
+            }
+        )
+
+    return {
+        "ok": True,
+        "user": username,
+        "points": points,
+    }
+
+
 def _normalize_replay_url(value: str) -> str:
     url = value.strip()
     if not url:
