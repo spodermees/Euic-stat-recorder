@@ -35,6 +35,14 @@ def export_site() -> None:
         """,
     )
 
+    totals = fetch_rows(
+        db,
+        """
+        SELECT COUNT(*) AS total_events
+        FROM events
+        """,
+    )[0]
+
     damage_stats = fetch_rows(
         db,
         """
@@ -79,15 +87,21 @@ def export_site() -> None:
     env.filters["tojson"] = lambda value: json.dumps(value, ensure_ascii=False)
 
     template = env.get_template("static_index.html")
-    html = template.render(
-        matches=matches,
-        damage_stats=damage_stats,
-        attacker_options=attacker_options,
-        opponent_options=opponent_options,
-        damage_rows=[dict(row) for row in damage_rows],
-    )
 
-    (OUTPUT_DIR / "index.html").write_text(html, encoding="utf-8")
+    def render_page(output_path: Path, static_prefix: str) -> None:
+        html = template.render(
+            matches=matches,
+            totals=totals,
+            damage_stats=damage_stats,
+            attacker_options=attacker_options,
+            opponent_options=opponent_options,
+            damage_rows=[dict(row) for row in damage_rows],
+            static_prefix=static_prefix,
+        )
+        output_path.write_text(html, encoding="utf-8")
+
+    render_page(OUTPUT_DIR / "index.html", "static")
+    render_page(BASE_DIR.parent / "index_website.html", "docs/static")
     shutil.copytree(BASE_DIR / "static", OUTPUT_STATIC_DIR, dirs_exist_ok=True)
 
     db.close()
