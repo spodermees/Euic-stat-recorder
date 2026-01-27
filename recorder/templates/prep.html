@@ -33,7 +33,7 @@
             {% for matchup in matchups %}
                 <button class="prep-tile" type="button" data-matchup-id="{{ matchup.id }}">
                     <span class="prep-title">{{ matchup.title }}</span>
-                    <span class="muted">Laatst bijgewerkt {{ matchup.updated_at }}</span>
+                    <span class="muted prep-updated" data-updated="{{ matchup.updated_at }}">Laatst bijgewerkt {{ matchup.updated_at }}</span>
                 </button>
             {% else %}
                 <div class="card">
@@ -73,6 +73,28 @@
         const prepModalSave = document.getElementById('prep-modal-save');
         const prepModalBody = document.getElementById('prep-modal-body');
         let activeMatchupId = null;
+
+        const formatLocalDateTime = (value) => {
+            if (!value) return value;
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return value;
+            return date.toLocaleString('nl-NL', {
+                timeZone: 'Europe/Amsterdam',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        };
+
+        document.querySelectorAll('.prep-updated').forEach((element) => {
+            const raw = element.getAttribute('data-updated');
+            const formatted = formatLocalDateTime(raw);
+            if (formatted) {
+                element.textContent = `Laatst bijgewerkt ${formatted}`;
+            }
+        });
 
         const openModal = () => {
             if (!prepModal) return;
