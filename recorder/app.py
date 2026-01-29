@@ -1539,10 +1539,21 @@ def _ingest_replay_url(replay_url: str) -> dict:
         return {"ok": False, "error": "missing url"}
 
     try:
-        with urllib.request.urlopen(normalized, timeout=8) as response:
+        req = urllib.request.Request(
+            normalized,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                "Accept": "application/json,text/plain;q=0.9,*/*;q=0.8",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=12) as response:
             payload = json.loads(response.read().decode("utf-8", errors="ignore"))
     except Exception:
-        return {"ok": False, "error": "failed to fetch replay", "url": _strip_replay_json(normalized)}
+        return {
+            "ok": False,
+            "error": "failed to fetch replay",
+            "url": _strip_replay_json(normalized),
+        }
 
     log_text = str(payload.get("log", ""))
     lines = log_text.splitlines()
@@ -1623,7 +1634,17 @@ def _ingest_replay_url(replay_url: str) -> dict:
 @app.route("/api/ingest_replay", methods=["POST"])
 def api_ingest_replay():
     data = request.get_json(silent=True) or {}
-    replay_url = str(data.get("url", ""))
+    replay_url = str(data.get("url", "")).strip()
+    if not replay_url:
+        replay_url = (request.form.get("url") or "").strip()
+    if not replay_url:
+        raw_text = request.get_data(as_text=True) or ""
+        urls = _extract_replay_urls(raw_text)
+        if urls:
+            replay_url = urls[0]
+    if not replay_url:
+        return {"status": "error", "message": "missing url"}, 400
+
     result = _ingest_replay_url(replay_url)
     if not result.get("ok"):
         return {"status": "error", "message": result.get("error", "failed to fetch replay")}, 400
@@ -1665,20 +1686,38 @@ def api_ingest_replay_bulk():
 
 @app.route("/api/ingest_replay_file", methods=["POST"])
 def api_ingest_replay_file():
+    data = request.get_json(silent=True) or {}
+    urls = data.get("urls")
+    text = str(data.get("text", ""))
+
+    url_list: list[str] = []
+    if isinstance(urls, list):
+        url_list = [str(item) for item in urls]
+    elif isinstance(urls, str) and urls.strip():
+        url_list = [line.strip() for line in urls.splitlines() if line.strip()]
+    elif text.strip():
+        url_list = _extract_replay_urls(text)
+    else:
+        raw_text = request.get_data(as_text=True) or ""
+        if raw_text.strip():
+            url_list = _extract_replay_urls(raw_text)
+
     replay_file = BASE_DIR / "replays.txt"
-    if not replay_file.exists():
-        return {"status": "error", "message": "replays.txt not found"}, 404
+    cleared = False
+    if not url_list:
+        if not replay_file.exists():
+            return {"status": "error", "message": "replays.txt not found"}, 404
+        file_text = replay_file.read_text(encoding="utf-8", errors="ignore")
+        url_list = _extract_replay_urls(file_text)
+        replay_file.write_text("", encoding="utf-8")
+        cleared = True
 
-    text = replay_file.read_text(encoding="utf-8", errors="ignore")
-    urls = _extract_replay_urls(text)
-    replay_file.write_text("", encoding="utf-8")
-
-    if not urls:
-        return {"status": "error", "message": "no urls found", "cleared": True}, 400
+    if not url_list:
+        return {"status": "error", "message": "no urls found", "cleared": cleared}, 400
 
     results = []
     ok_count = 0
-    for url in urls:
+    for url in url_list:
         result = _ingest_replay_url(url)
         if result.get("ok"):
             ok_count += 1
@@ -1689,7 +1728,7 @@ def api_ingest_replay_file():
         "ok": ok_count,
         "failed": len(results) - ok_count,
     }
-    return {"status": "ok", "summary": summary, "results": results, "cleared": True}
+    return {"status": "ok", "summary": summary, "results": results, "cleared": cleared}
 
 
 @app.route("/api/ingest_replay", methods=["OPTIONS"])
