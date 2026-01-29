@@ -7,7 +7,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from app import DB_PATH, MY_POKEMON_PRESET
+from app import DB_PATH, MY_POKEMON_PRESET, PREP_SECTIONS
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "templates"
@@ -80,6 +80,41 @@ def export_site() -> None:
     if not opponent_options:
         opponent_options = unique_names
 
+    prep_notes_rows = fetch_rows(
+        db,
+        """
+        SELECT section, content
+        FROM prep_notes
+        """,
+    )
+    prep_notes = {row["section"]: row["content"] or "" for row in prep_notes_rows}
+
+    prep_matchup_rows = fetch_rows(
+        db,
+        """
+        SELECT id, title, updated_at
+        FROM prep_matchups
+        ORDER BY updated_at DESC, id DESC
+        """,
+    )
+    prep_matchups = []
+    for matchup in prep_matchup_rows:
+        notes_rows = fetch_rows(
+            db,
+            """
+            SELECT section, content
+            FROM prep_matchup_notes
+            WHERE matchup_id = ?
+            """,
+            (matchup["id"],),
+        )
+        prep_matchups.append(
+            {
+                **dict(matchup),
+                "notes": {row["section"]: row["content"] or "" for row in notes_rows},
+            }
+        )
+
     env = Environment(
         loader=FileSystemLoader(TEMPLATES_DIR),
         autoescape=select_autoescape(["html", "xml"]),
@@ -96,6 +131,9 @@ def export_site() -> None:
             attacker_options=attacker_options,
             opponent_options=opponent_options,
             damage_rows=[dict(row) for row in damage_rows],
+            prep_sections=PREP_SECTIONS,
+            prep_notes=prep_notes,
+            prep_matchups=prep_matchups,
             static_prefix=static_prefix,
         )
         output_path.write_text(html, encoding="utf-8")

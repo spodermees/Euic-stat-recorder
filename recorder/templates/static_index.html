@@ -97,6 +97,52 @@
                 <p>No matches yet.</p>
             {% endif %}
         </section>
+
+        <section class="card">
+            <h2>Prep</h2>
+            {% if prep_notes %}
+                <div class="prep-grid">
+                    {% for section in prep_sections %}
+                        <div class="prep-tile">
+                            <span class="prep-title">{{ section }}</span>
+                            {% set note = prep_notes.get(section, '') %}
+                            {% if note %}
+                                <p class="muted">{{ note | replace('\n', '<br>') | safe }}</p>
+                            {% else %}
+                                <p class="muted">—</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="muted">Nog geen algemene prep-notes.</p>
+            {% endif %}
+
+            <h3 style="margin-top: 24px;">Matchups</h3>
+            {% if prep_matchups %}
+                <div class="prep-grid">
+                    {% for matchup in prep_matchups %}
+                        <div class="prep-tile">
+                            <span class="prep-title">{{ matchup.title }}</span>
+                            <span class="muted">Laatst bijgewerkt {{ matchup.updated_at }}</span>
+                            <div class="modal-body" style="padding: 0;">
+                                {% for section in prep_sections %}
+                                    {% set content = matchup.notes.get(section, '') %}
+                                    {% if content %}
+                                        <div class="prep-field">
+                                            <strong>{{ section }}</strong>
+                                            <p class="muted">{{ content | replace('\n', '<br>') | safe }}</p>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="muted">Nog geen matchups.</p>
+            {% endif %}
+        </section>
     </main>
 
     <script type="application/json" id="damage-rows-data">{{ damage_rows | tojson | safe }}</script>
