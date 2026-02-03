@@ -153,9 +153,19 @@ button,
     text-decoration: none;
 }
 
+.button-outline {
+    background: transparent;
+    border: 1px solid #2b334b;
+    color: #d5dcf5;
+}
+
 button:hover,
 .button:hover {
     background: #6f87ff;
+}
+
+.button-outline:hover {
+    background: #1a2135;
 }
 
 .list {
@@ -272,6 +282,18 @@ button:hover,
     grid-template-rows: auto 1fr auto;
 }
 
+.modal-content--wide {
+    width: min(1200px, 96vw);
+}
+
+.modal-header-title h3 {
+    margin: 0 0 6px;
+}
+
+.modal-header-actions {
+    margin-left: auto;
+}
+
 .modal-header {
     display: flex;
     gap: 12px;
@@ -288,13 +310,189 @@ button:hover,
     padding: 16px;
     overflow: auto;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
+    gap: 20px;
 }
 
 .prep-field {
     display: grid;
     gap: 8px;
+}
+
+.prep-fields-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.flowchart-card {
+    background: #0f1422;
+    border: 1px solid #232a42;
+    border-radius: 16px;
+    padding: 16px;
+    display: grid;
+    gap: 16px;
+}
+
+.flowchart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.flowchart-header h3 {
+    margin: 0 0 6px;
+}
+
+.flowchart-actions {
+    display: inline-flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.flowchart-content {
+    display: grid;
+    grid-template-columns: minmax(240px, 1fr) minmax(280px, 1.2fr);
+    gap: 16px;
+}
+
+.flowchart-content--single {
+    grid-template-columns: 1fr;
+}
+
+.flowchart-lists {
+    display: grid;
+    gap: 16px;
+}
+
+.flowchart-list h4 {
+    margin: 0 0 8px;
+}
+
+.flowchart-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.flowchart-row button {
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.flowchart-canvas {
+    background: #0b0f1c;
+    border: 1px solid #232a42;
+    border-radius: 14px;
+    padding: 8px;
+    min-height: 260px;
+    display: flex;
+}
+
+.flowchart-canvas svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.flowchart-logic summary {
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.flowchart-logic textarea {
+    width: 100%;
+}
+
+.flowchart-modal-body {
+    gap: 16px;
+}
+
+.flowchart-tabs {
+    display: inline-flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.flowchart-tab {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid #2b334b;
+    background: transparent;
+    color: #cdd5f3;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.flowchart-tab.active {
+    background: #4c6fff;
+    border-color: #4c6fff;
+    color: #fff;
+}
+
+.flowchart-tab-panel {
+    display: grid;
+    gap: 12px;
+}
+
+.flowchart-mermaid {
+    display: grid;
+    gap: 12px;
+}
+
+.flowchart-preview {
+    background: #0b0f1c;
+    border: 1px solid #232a42;
+    border-radius: 14px;
+    padding: 12px;
+    min-height: 320px;
+}
+
+.flowchart-preview-canvas {
+    overflow: auto;
+    min-height: 280px;
+    width: 100%;
+}
+
+.flowchart-tab-panel[hidden] {
+    display: none;
+}
+
+.flowchart-preview-canvas svg {
+    width: 100%;
+    height: auto;
+}
+
+.flowchart-drawio {
+    display: grid;
+    gap: 12px;
+}
+
+.flowchart-drawio-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.flowchart-drawio-frame {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #232a42;
+    background: #0b0f1c;
+    min-height: 500px;
+}
+
+.flowchart-drawio-frame iframe {
+    width: 100%;
+    height: 70vh;
+    border: none;
+    display: block;
+    background: #0b0f1c;
 }
 
 .modal-actions {
@@ -529,6 +727,15 @@ td {
     .app-header,
     .container {
         padding: 24px;
+    }
+
+    .flowchart-content {
+        grid-template-columns: 1fr;
+    }
+
+    .flowchart-header {
+        flex-direction: column;
+        align-items: flex-start;
     }
 
     table,

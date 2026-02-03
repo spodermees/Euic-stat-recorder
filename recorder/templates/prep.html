@@ -50,12 +50,35 @@
                 <button type="button" class="button" id="prep-modal-close">Sluiten</button>
             </header>
             <div class="modal-body" id="prep-modal-body">
-                {% for section in sections %}
-                    <div class="prep-field">
-                        <label>{{ section }}</label>
-                        <textarea data-section="{{ section }}" rows="4" placeholder="Schrijf je ideeën..."></textarea>
+                <div class="prep-fields-grid" id="prep-text-fields">
+                    {% for section in sections if section != 'Flowchart' %}
+                        <div class="prep-field">
+                            <label>{{ section }}</label>
+                            <textarea data-section="{{ section }}" rows="4" placeholder="Schrijf je ideeën..."></textarea>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="flowchart-card" id="flowchart-card">
+                    <div class="flowchart-header">
+                        <div>
+                            <h3>Flowchart</h3>
+                            <p class="muted">Bouw je gameplan visueel en voeg if/else-logica toe.</p>
+                        </div>
+                        <div class="flowchart-actions">
+                            <button type="button" id="flowchart-add-node">Node toevoegen</button>
+                            <button type="button" class="button-outline" id="flowchart-open-editor">Open flowchart</button>
+                        </div>
                     </div>
-                {% endfor %}
+                    <div class="flowchart-content flowchart-content--single">
+                        <div class="flowchart-canvas">
+                            <div id="flowchart-card-mermaid" class="flowchart-preview-canvas" aria-live="polite"></div>
+                        </div>
+                    </div>
+                    <details class="flowchart-logic">
+                        <summary>Tekst / IFs</summary>
+                        <textarea id="flowchart-text" rows="6" placeholder="Schrijf hier je if/else-voorwaarden of uitleg..."></textarea>
+                    </details>
+                </div>
             </div>
             <div class="modal-actions">
                 <button type="button" id="prep-modal-save">Opslaan</button>
@@ -63,6 +86,50 @@
         </div>
     </div>
 
+    <div class="modal" id="flowchart-modal" aria-hidden="true">
+        <div class="modal-content modal-content--wide">
+            <header class="modal-header">
+                <div class="modal-header-title">
+                    <h3>Flowchart editor</h3>
+                    <p class="muted">Bewerk je flowchart in Mermaid of Draw.io.</p>
+                </div>
+                <div class="modal-header-actions">
+                    <button type="button" class="button-outline" id="flowchart-modal-close">Sluiten</button>
+                </div>
+            </header>
+            <div class="modal-body flowchart-modal-body">
+                <div class="flowchart-tabs" role="tablist" aria-label="Flowchart tabs">
+                    <button type="button" class="flowchart-tab active" data-tab="mermaid" role="tab" aria-selected="true">Mermaid</button>
+                    <button type="button" class="flowchart-tab" data-tab="drawio" role="tab" aria-selected="false">Draw.io</button>
+                </div>
+                <div class="flowchart-tab-panel" data-panel="mermaid" role="tabpanel">
+                    <div class="flowchart-mermaid">
+                        <label for="flowchart-mermaid-text">Mermaid syntax</label>
+                        <textarea id="flowchart-mermaid-text" rows="10" placeholder="flowchart TD\n  A[Start] --> B{Beslissing}\n  B -->|Ja| C[Actie]\n  B -->|Nee| D[Einde]"></textarea>
+                        <div class="flowchart-preview">
+                            <div id="flowchart-mermaid-preview" class="flowchart-preview-canvas" aria-live="polite"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flowchart-tab-panel" data-panel="drawio" role="tabpanel" hidden>
+                    <div class="flowchart-drawio">
+                        <div class="flowchart-drawio-toolbar">
+                            <button type="button" class="button-outline" id="flowchart-drawio-save">Opslaan in app</button>
+                            <span class="muted" id="flowchart-drawio-status">Gebruik de Draw.io editor en klik daarna op Opslaan in app.</span>
+                        </div>
+                        <div class="flowchart-drawio-frame">
+                            <iframe id="flowchart-drawio-iframe" title="Draw.io editor" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="flowchart-modal-apply">Opslaan</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <script>
         const prepGrid = document.getElementById('prep-grid');
         const prepCreateForm = document.getElementById('prep-create-form');
@@ -72,7 +139,33 @@
         const prepModalClose = document.getElementById('prep-modal-close');
         const prepModalSave = document.getElementById('prep-modal-save');
         const prepModalBody = document.getElementById('prep-modal-body');
+        const flowchartNodes = document.getElementById('flowchart-nodes');
+        const flowchartEdges = document.getElementById('flowchart-edges');
+        const flowchartSvg = document.getElementById('flowchart-svg');
+        const flowchartAddNode = document.getElementById('flowchart-add-node');
+        const flowchartAddEdge = document.getElementById('flowchart-add-edge');
+        const flowchartText = document.getElementById('flowchart-text');
+        const flowchartCardMermaid = document.getElementById('flowchart-card-mermaid');
+        const flowchartOpenEditor = document.getElementById('flowchart-open-editor');
+        const flowchartModal = document.getElementById('flowchart-modal');
+        const flowchartModalClose = document.getElementById('flowchart-modal-close');
+        const flowchartModalApply = document.getElementById('flowchart-modal-apply');
+        const flowchartTabs = document.querySelectorAll('.flowchart-tab');
+        const flowchartTabPanels = document.querySelectorAll('.flowchart-tab-panel');
+        const flowchartMermaidText = document.getElementById('flowchart-mermaid-text');
+        const flowchartMermaidPreview = document.getElementById('flowchart-mermaid-preview');
+        const flowchartDrawioFrame = document.getElementById('flowchart-drawio-iframe');
+        const flowchartDrawioSave = document.getElementById('flowchart-drawio-save');
+        const flowchartDrawioStatus = document.getElementById('flowchart-drawio-status');
         let activeMatchupId = null;
+        let flowchartData = { nodes: [], edges: [], text: '', mermaid: '', drawio: '' };
+        let drawioReady = false;
+        let pendingDrawioSave = false;
+        let mermaidRenderId = 0;
+
+        if (window.mermaid) {
+            window.mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });
+        }
 
         const formatLocalDateTime = (value) => {
             if (!value) return value;
@@ -108,6 +201,192 @@
             prepModal.setAttribute('aria-hidden', 'true');
         };
 
+        const newId = () => `node-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+        const normalizeFlowchart = (raw) => {
+            if (!raw) return { nodes: [], edges: [], text: '', mermaid: '', drawio: '' };
+            try {
+                const parsed = JSON.parse(raw);
+                const nodes = Array.isArray(parsed?.nodes) ? parsed.nodes : [];
+                const edges = Array.isArray(parsed?.edges) ? parsed.edges : [];
+                const text = typeof parsed?.text === 'string' ? parsed.text : '';
+                const mermaid = typeof parsed?.mermaid === 'string' ? parsed.mermaid : '';
+                const drawio = typeof parsed?.drawio === 'string' ? parsed.drawio : '';
+                return {
+                    nodes: nodes.map((node, index) => ({
+                        id: typeof node?.id === 'string' ? node.id : `${newId()}-${index}`,
+                        type: node?.type === 'decision' ? 'decision' : 'action',
+                        label: String(node?.label || `Stap ${index + 1}`)
+                    })),
+                    edges: edges.map((edge, index) => ({
+                        id: typeof edge?.id === 'string' ? edge.id : `edge-${Date.now()}-${index}`,
+                        from: String(edge?.from || ''),
+                        to: String(edge?.to || ''),
+                        label: String(edge?.label || '')
+                    })),
+                    text,
+                    mermaid,
+                    drawio
+                };
+            } catch (error) {
+                return { nodes: [], edges: [], text: '', mermaid: '', drawio: '' };
+            }
+        };
+
+        const renderFlowchart = () => {
+            renderFlowchartNodes();
+            renderFlowchartEdges();
+            renderFlowchartDiagram();
+        };
+
+        const renderMermaidInto = async (target, code) => {
+            if (!target || !window.mermaid) return;
+            const trimmed = code?.trim() || '';
+            target.innerHTML = '';
+            if (!trimmed) {
+                target.textContent = 'Voer Mermaid syntax in om een preview te zien.';
+                return;
+            }
+            mermaidRenderId += 1;
+            const currentId = mermaidRenderId;
+            try {
+                const { svg } = await window.mermaid.render(`mermaid-${Date.now()}-${currentId}`, trimmed);
+                if (currentId !== mermaidRenderId) return;
+                target.innerHTML = svg;
+            } catch (error) {
+                target.textContent = 'Kon Mermaid niet renderen. Controleer je syntax.';
+            }
+        };
+
+        const renderMermaidPreview = async () => {
+            const code = flowchartMermaidText?.value?.trim() || '';
+            await renderMermaidInto(flowchartMermaidPreview, code);
+            await renderMermaidInto(flowchartCardMermaid, code);
+        };
+
+        const renderFlowchartNodes = () => {
+            if (!flowchartNodes) return;
+            flowchartNodes.innerHTML = '';
+            flowchartData.nodes.forEach((node, index) => {
+                const row = document.createElement('div');
+                row.className = 'flowchart-row';
+
+                const labelInput = document.createElement('input');
+                labelInput.type = 'text';
+                labelInput.value = node.label;
+                labelInput.placeholder = 'Label';
+                labelInput.addEventListener('input', () => {
+                    node.label = labelInput.value;
+                    renderFlowchartDiagram();
+                });
+
+                const typeSelect = document.createElement('select');
+                const optionAction = new Option('Actie', 'action', node.type === 'action', node.type === 'action');
+                const optionDecision = new Option('Beslissing', 'decision', node.type === 'decision', node.type === 'decision');
+                typeSelect.append(optionAction, optionDecision);
+                typeSelect.addEventListener('change', () => {
+                    node.type = typeSelect.value === 'decision' ? 'decision' : 'action';
+                    renderFlowchartDiagram();
+                });
+
+                const upButton = document.createElement('button');
+                upButton.type = 'button';
+                upButton.textContent = '↑';
+                upButton.disabled = index === 0;
+                upButton.addEventListener('click', () => {
+                    if (index === 0) return;
+                    const [moved] = flowchartData.nodes.splice(index, 1);
+                    flowchartData.nodes.splice(index - 1, 0, moved);
+                    renderFlowchart();
+                });
+
+                const downButton = document.createElement('button');
+                downButton.type = 'button';
+                downButton.textContent = '↓';
+                downButton.disabled = index === flowchartData.nodes.length - 1;
+                downButton.addEventListener('click', () => {
+                    if (index >= flowchartData.nodes.length - 1) return;
+                    const [moved] = flowchartData.nodes.splice(index, 1);
+                    flowchartData.nodes.splice(index + 1, 0, moved);
+                    renderFlowchart();
+                });
+
+                const deleteButton = document.createElement('button');
+                deleteButton.type = 'button';
+                deleteButton.textContent = 'Verwijderen';
+                deleteButton.addEventListener('click', () => {
+                    flowchartData.nodes = flowchartData.nodes.filter((item) => item.id !== node.id);
+                    flowchartData.edges = flowchartData.edges.filter((edge) => edge.from !== node.id && edge.to !== node.id);
+                    renderFlowchart();
+                });
+
+                row.append(labelInput, typeSelect, upButton, downButton, deleteButton);
+                flowchartNodes.appendChild(row);
+            });
+        };
+
+        const renderFlowchartEdges = () => {
+            if (!flowchartEdges) return;
+            flowchartEdges.innerHTML = '';
+            flowchartData.edges.forEach((edge) => {
+                const row = document.createElement('div');
+                row.className = 'flowchart-row';
+
+                const fromSelect = document.createElement('select');
+                const toSelect = document.createElement('select');
+                const labelInput = document.createElement('input');
+                labelInput.type = 'text';
+                labelInput.placeholder = 'Label (bv. ja/nee)';
+                labelInput.value = edge.label;
+                labelInput.addEventListener('input', () => {
+                    edge.label = labelInput.value;
+                    renderFlowchartDiagram();
+                });
+
+                const buildOptions = (select, value) => {
+                    select.innerHTML = '';
+                    const placeholder = new Option('Kies node', '', !value, !value);
+                    select.append(placeholder);
+                    flowchartData.nodes.forEach((node) => {
+                        const option = new Option(node.label || node.id, node.id, node.id === value, node.id === value);
+                        select.append(option);
+                    });
+                };
+
+                buildOptions(fromSelect, edge.from);
+                buildOptions(toSelect, edge.to);
+
+                fromSelect.addEventListener('change', () => {
+                    edge.from = fromSelect.value;
+                    renderFlowchartDiagram();
+                });
+                toSelect.addEventListener('change', () => {
+                    edge.to = toSelect.value;
+                    renderFlowchartDiagram();
+                });
+
+                const deleteButton = document.createElement('button');
+                deleteButton.type = 'button';
+                deleteButton.textContent = 'Verwijderen';
+                deleteButton.addEventListener('click', () => {
+                    flowchartData.edges = flowchartData.edges.filter((item) => item.id !== edge.id);
+                    renderFlowchart();
+                });
+
+                row.append(fromSelect, toSelect, labelInput, deleteButton);
+                flowchartEdges.appendChild(row);
+            });
+        };
+
+        const createSvgElement = (name) => document.createElementNS('http://www.w3.org/2000/svg', name);
+
+        const renderFlowchartDiagram = () => {
+            if (flowchartMermaidText && flowchartMermaidText.value !== flowchartData.mermaid) {
+                flowchartMermaidText.value = flowchartData.mermaid || '';
+            }
+            renderMermaidPreview();
+        };
+
         const loadMatchup = async (matchupId) => {
             const response = await fetch(`/api/prep_matchups/${matchupId}`);
             const payload = await response.json();
@@ -118,6 +397,15 @@
                 const section = textarea.dataset.section;
                 textarea.value = payload.notes?.[section] || '';
             });
+            flowchartData = normalizeFlowchart(payload.notes?.Flowchart);
+            if (flowchartText) {
+                flowchartText.value = flowchartData.text || '';
+            }
+            if (flowchartMermaidText) {
+                flowchartMermaidText.value = flowchartData.mermaid || '';
+                renderMermaidPreview();
+            }
+            renderFlowchart();
             openModal();
         };
 
@@ -164,6 +452,10 @@
             prepModalBody.querySelectorAll('textarea[data-section]').forEach((textarea) => {
                 notes[textarea.dataset.section] = textarea.value;
             });
+            if (flowchartText) {
+                flowchartData.text = flowchartText.value;
+            }
+            notes.Flowchart = JSON.stringify(flowchartData);
             const response = await fetch(`/api/prep_matchups/${activeMatchupId}` , {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -175,6 +467,130 @@
             const payload = await response.json();
             if (!response.ok || !payload.ok) return;
             window.location.reload();
+        });
+
+        const openFlowchartModal = () => {
+            if (!flowchartModal) return;
+            flowchartModal.classList.add('open');
+            flowchartModal.setAttribute('aria-hidden', 'false');
+            setActiveTab('mermaid');
+            if (flowchartMermaidText) {
+                flowchartMermaidText.value = flowchartData.mermaid || '';
+                renderMermaidPreview();
+            }
+            if (flowchartDrawioFrame) {
+                if (!flowchartDrawioFrame.src) {
+                    flowchartDrawioFrame.src = 'https://embed.diagrams.net/?embed=1&ui=dark&spin=1&proto=json&configure=1';
+                }
+                if (drawioReady) {
+                    const xml = flowchartData.drawio || '';
+                    flowchartDrawioFrame.contentWindow?.postMessage(JSON.stringify({ action: 'load', xml }), '*');
+                }
+            }
+        };
+
+        const closeFlowchartModal = () => {
+            if (!flowchartModal) return;
+            flowchartModal.classList.remove('open');
+            flowchartModal.setAttribute('aria-hidden', 'true');
+        };
+
+        const setActiveTab = (tabName) => {
+            flowchartTabs.forEach((button) => {
+                const isActive = button.dataset.tab === tabName;
+                button.classList.toggle('active', isActive);
+                button.setAttribute('aria-selected', String(isActive));
+            });
+            flowchartTabPanels.forEach((panel) => {
+                panel.hidden = panel.dataset.panel !== tabName;
+            });
+        };
+
+        flowchartTabs.forEach((button) => {
+            button.addEventListener('click', () => {
+                setActiveTab(button.dataset.tab || 'mermaid');
+            });
+        });
+
+        flowchartMermaidText?.addEventListener('input', () => {
+            flowchartData.mermaid = flowchartMermaidText.value;
+            renderMermaidPreview();
+        });
+
+        flowchartOpenEditor?.addEventListener('click', openFlowchartModal);
+        flowchartModalClose?.addEventListener('click', closeFlowchartModal);
+        flowchartModal?.addEventListener('click', (event) => {
+            if (event.target === flowchartModal) {
+                closeFlowchartModal();
+            }
+        });
+
+        flowchartModalApply?.addEventListener('click', () => {
+            if (flowchartMermaidText) {
+                flowchartData.mermaid = flowchartMermaidText.value;
+            }
+            closeFlowchartModal();
+        });
+
+        flowchartDrawioSave?.addEventListener('click', () => {
+            if (!flowchartDrawioFrame?.contentWindow) return;
+            pendingDrawioSave = true;
+            flowchartDrawioStatus.textContent = 'Exporteren...';
+            flowchartDrawioFrame.contentWindow.postMessage(JSON.stringify({ action: 'export', format: 'xml', xml: true, spin: 'Exporteren' }), '*');
+        });
+
+        window.addEventListener('message', (event) => {
+            if (!event.data || typeof event.data !== 'string') return;
+            let data;
+            try {
+                data = JSON.parse(event.data);
+            } catch (error) {
+                return;
+            }
+            if (data.event === 'configure') {
+                flowchartDrawioFrame?.contentWindow?.postMessage(JSON.stringify({
+                    action: 'configure',
+                    config: {
+                        css: '.geSidebarContainer{background:#0b0f1c;} .geToolbarContainer{background:#0b0f1c;} .geMenubarContainer{background:#0b0f1c;} .geStatusContainer{background:#0b0f1c;}'
+                    }
+                }), '*');
+            }
+            if (data.event === 'ready' || data.event === 'init') {
+                drawioReady = true;
+                const xml = flowchartData.drawio || '';
+                if (flowchartDrawioFrame?.contentWindow) {
+                    flowchartDrawioFrame.contentWindow.postMessage(JSON.stringify({ action: 'load', xml }), '*');
+                }
+            }
+            if (data.event === 'export' && typeof data.data === 'string') {
+                flowchartData.drawio = data.data;
+                flowchartDrawioStatus.textContent = 'Opgeslagen in app.';
+                if (pendingDrawioSave) {
+                    pendingDrawioSave = false;
+                    closeFlowchartModal();
+                }
+            }
+        });
+
+        flowchartAddNode?.addEventListener('click', () => {
+            flowchartData.nodes.push({
+                id: newId(),
+                type: 'action',
+                label: `Stap ${flowchartData.nodes.length + 1}`
+            });
+            renderFlowchart();
+        });
+
+        flowchartAddEdge?.addEventListener('click', () => {
+            const from = flowchartData.nodes[0]?.id || '';
+            const to = flowchartData.nodes[1]?.id || '';
+            flowchartData.edges.push({
+                id: `edge-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+                from,
+                to,
+                label: ''
+            });
+            renderFlowchart();
         });
 
         prepModalClose?.addEventListener('click', closeModal);

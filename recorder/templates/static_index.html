@@ -103,15 +103,17 @@
             {% if prep_notes %}
                 <div class="prep-grid">
                     {% for section in prep_sections %}
-                        <div class="prep-tile">
-                            <span class="prep-title">{{ section }}</span>
-                            {% set note = prep_notes.get(section, '') %}
-                            {% if note %}
-                                <p class="muted">{{ note | replace('\n', '<br>') | safe }}</p>
-                            {% else %}
-                                <p class="muted">—</p>
-                            {% endif %}
-                        </div>
+                        {% if section != 'Flowchart' %}
+                            <div class="prep-tile">
+                                <span class="prep-title">{{ section }}</span>
+                                {% set note = prep_notes.get(section, '') %}
+                                {% if note %}
+                                    <p class="muted">{{ note | replace('\n', '<br>') | safe }}</p>
+                                {% else %}
+                                    <p class="muted">—</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     {% endfor %}
                 </div>
             {% else %}
@@ -127,12 +129,14 @@
                             <span class="muted">Laatst bijgewerkt {{ matchup.updated_at }}</span>
                             <div class="modal-body" style="padding: 0;">
                                 {% for section in prep_sections %}
-                                    {% set content = matchup.notes.get(section, '') %}
-                                    {% if content %}
-                                        <div class="prep-field">
-                                            <strong>{{ section }}</strong>
-                                            <p class="muted">{{ content | replace('\n', '<br>') | safe }}</p>
-                                        </div>
+                                    {% if section != 'Flowchart' %}
+                                        {% set content = matchup.notes.get(section, '') %}
+                                        {% if content %}
+                                            <div class="prep-field">
+                                                <strong>{{ section }}</strong>
+                                                <p class="muted">{{ content | replace('\n', '<br>') | safe }}</p>
+                                            </div>
+                                        {% endif %}
                                     {% endif %}
                                 {% endfor %}
                             </div>

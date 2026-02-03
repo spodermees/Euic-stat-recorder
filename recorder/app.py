@@ -716,6 +716,7 @@ PREP_SECTIONS = [
     "Tera",
     "Speed control",
     "Items/sets",
+    "Flowchart",
     "Notes",
 ]
 
