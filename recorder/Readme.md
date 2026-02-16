@@ -74,3 +74,25 @@ If you want it to work automatically while you play:
 ### Replay URL import (after battle)
 
 Paste a battle replay URL on the homepage and it will fetch the replay log and import it.
+
+## Build a Windows .exe (embedded UI)
+
+You can bundle the app into a standalone executable with an embedded UI (no browser needed) using PyInstaller.
+
+From this folder, run either:
+
+- build_exe.ps1 (PowerShell)
+- build_exe.bat (CMD)
+
+The executables will appear in dist\:
+
+- EuicStatRecorder.exe (embedded UI desktop app)
+- EuicStatRecorderWatcher.exe (log watcher)
+
+### Data folder
+
+When running from an .exe, data is stored in:
+
+%LOCALAPPDATA%\EuicStatRecorder
+
+You can override it by setting RECORDER_DATA_DIR to a folder path.

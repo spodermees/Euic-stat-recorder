@@ -4,6 +4,7 @@ import json
 import os
 import re
 import sqlite3
+import sys
 import urllib.request
 from datetime import datetime
 from pathlib import Path
@@ -12,7 +13,21 @@ from typing import Iterable
 from flask import Flask, g, redirect, render_template, request, url_for
 
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "recorder.db"
+
+
+def _resolve_data_dir() -> Path:
+    override = os.environ.get("RECORDER_DATA_DIR", "").strip()
+    if override:
+        return Path(override).expanduser()
+    if getattr(sys, "frozen", False):
+        local_app_data = os.environ.get("LOCALAPPDATA") or os.environ.get("APPDATA")
+        if local_app_data:
+            return Path(local_app_data) / "EuicStatRecorder"
+    return BASE_DIR
+
+
+DATA_DIR = _resolve_data_dir()
+DB_PATH = DATA_DIR / "recorder.db"
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
@@ -1703,7 +1718,7 @@ def api_ingest_replay_file():
         if raw_text.strip():
             url_list = _extract_replay_urls(raw_text)
 
-    replay_file = BASE_DIR / "replays.txt"
+    replay_file = DATA_DIR / "replays.txt"
     cleared = False
     if not url_list:
         if not replay_file.exists():
@@ -1744,5 +1759,8 @@ def live_match():
 
 
 if __name__ == "__main__":
-    os.makedirs(BASE_DIR, exist_ok=True)
-    app.run(debug=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    host = os.environ.get("RECORDER_HOST", "127.0.0.1")
+    port = int(os.environ.get("RECORDER_PORT", "5000"))
+    debug = os.environ.get("RECORDER_DEBUG", "").strip().lower() in {"1", "true", "yes"}
+    app.run(host=host, port=port, debug=debug)

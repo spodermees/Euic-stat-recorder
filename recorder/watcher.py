@@ -2,9 +2,24 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import time
 from pathlib import Path
 from urllib import request
+
+
+def _resolve_data_dir() -> Path:
+    override = os.environ.get("RECORDER_DATA_DIR", "").strip()
+    if override:
+        return Path(override).expanduser()
+    if getattr(sys, "frozen", False):
+        local_app_data = os.environ.get("LOCALAPPDATA") or os.environ.get("APPDATA")
+        if local_app_data:
+            return Path(local_app_data) / "EuicStatRecorder"
+    return Path(__file__).resolve().parent
+
+
+DATA_DIR = _resolve_data_dir()
 
 
 def post_line(line: str, url: str) -> None:
@@ -159,8 +174,10 @@ def main() -> None:
         "SHOWDOWN_REPLAY_API_URL", "http://127.0.0.1:5000/api/ingest_replay_file"
     )
 
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
     if replay_mode:
-        target = replay_file or (Path(__file__).resolve().parent / "replays.txt")
+        target = replay_file or (DATA_DIR / "replays.txt")
         watch_replay_file(target, replay_api_url)
         return
 
@@ -185,7 +202,7 @@ def main() -> None:
         watch_replay_file(replay_file, replay_api_url)
         return
 
-    fallback = Path(__file__).resolve().parent / "live_log.txt"
+    fallback = DATA_DIR / "live_log.txt"
     print(f"Watching fallback file: {fallback}")
     state_path = fallback.with_suffix(".offset")
     tail_file(fallback, state_path, api_url)
