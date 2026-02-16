@@ -6,20 +6,20 @@
     <title>Matchup prep | Showdown Recorder</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body data-active-team-id="{{ active_team.id }}">
     <header class="app-header">
         <div>
             <h1>Matchup prep</h1>
             <p>Werk je matchup ideëen uit in grote blokken.</p>
         </div>
         <div class="actions">
-            <a class="button" href="{{ url_for('index') }}">Back</a>
+            <a class="button" href="{{ url_for('index', team_id=active_team.id) }}">Back</a>
         </div>
     </header>
 
     <main class="container">
         <section class="card">
-            <h2>Matchups</h2>
+            <h2>Matchups · {{ active_team.name }}</h2>
             <div class="prep-toolbar">
                 <input type="text" id="prep-search" placeholder="Zoek matchup...">
                 <form class="prep-create" id="prep-create-form">
@@ -134,6 +134,7 @@
         const prepGrid = document.getElementById('prep-grid');
         const prepCreateForm = document.getElementById('prep-create-form');
         const prepSearch = document.getElementById('prep-search');
+        const activeTeamId = Number(document.body?.dataset?.activeTeamId || '');
         const prepModal = document.getElementById('prep-modal');
         const prepModalTitle = document.getElementById('prep-modal-title');
         const prepModalClose = document.getElementById('prep-modal-close');
@@ -438,13 +439,14 @@
             const response = await fetch('/api/prep_matchups', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title })
+                body: JSON.stringify({ title, team_id: activeTeamId })
             });
             const payload = await response.json();
             if (!response.ok || !payload.ok) return;
             input.value = '';
             window.location.reload();
         });
+
 
         prepModalSave?.addEventListener('click', async () => {
             if (!activeMatchupId) return;

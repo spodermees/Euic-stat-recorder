@@ -6,14 +6,23 @@
     <title>Showdown Recorder</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body data-active-team-id="{{ active_team.id }}">
     <header class="app-header">
         <div>
             <h1>Showdown Recorder</h1>
             <p>Upload a chat log to extract items and damage ranges.</p>
         </div>
         <div class="actions">
-            <a class="button" href="{{ url_for('prep') }}">Prep</a>
+            <a class="button" id="prep-link" href="{{ url_for('prep', team_id=active_team.id) }}">Prep</a>
+            <div class="team-picker">
+                <label class="sr-only" for="team-select">Team</label>
+                <select id="team-select" aria-label="Selecteer team">
+                    {% for team in teams %}
+                        <option value="{{ team.id }}" {% if team.id == active_team.id %}selected{% endif %}>{{ team.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="button-outline" id="team-add" type="button">+ Team</button>
         </div>
         <div class="stat">
             <span>Total events</span>
@@ -48,7 +57,8 @@
                     <span class="muted">{{ damage_stats.total_hits }} hits</span>
                 </div>
                 {% if attacker_options and opponent_options %}
-                    <form class="form-grid" method="get" action="{{ url_for('index') }}" style="margin-top:16px;">
+                    <form class="form-grid" method="get" action="{{ url_for('index', team_id=active_team.id) }}" style="margin-top:16px;">
+                        <input type="hidden" name="team_id" value="{{ active_team.id }}">
                         <label>
                             Mijn Pokémon
                             <select name="attacker" class="js-searchable-select" required>
@@ -149,6 +159,39 @@
         </section>
 
         <section class="card">
+            <h2>Import Pokepaste (nicknames)</h2>
+            <form class="form-grid" id="pokepaste-form">
+                <label>
+                    Pokepaste URL
+                    <input type="text" name="pokepaste_url" placeholder="https://pokepast.es/....">
+                </label>
+                <button type="submit">Import nicknames</button>
+            </form>
+            <p class="hint" id="pokepaste-status">Plak een Pokepaste link om nicknames op te slaan bij het team.</p>
+            {% if team_pokemon %}
+                <div class="list" style="margin-top: 16px;">
+                    {% for item in team_pokemon %}
+                        <div class="list-item">
+                            <div>
+                                <strong>{{ item.nickname }}</strong>
+                                {% if item.species %}
+                                    <span class="muted">({{ item.species }})</span>
+                                {% endif %}
+                            </div>
+                            {% if item.source_url %}
+                                <div class="list-actions">
+                                    <a class="chip" href="{{ item.source_url }}" target="_blank" rel="noreferrer">Pokepaste</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="muted" style="margin-top: 12px;">Nog geen nicknames opgeslagen voor dit team.</p>
+            {% endif %}
+        </section>
+
+        <section class="card">
             <h2>Import replay list (.txt)</h2>
             <form class="form-grid" id="replay-bulk-form">
                 <label>
@@ -209,6 +252,8 @@
         const replayBulkStatus = document.getElementById('replay-bulk-status');
         const replayFileForm = document.getElementById('replay-file-form');
         const replayFileStatus = document.getElementById('replay-file-status');
+        const pokepasteForm = document.getElementById('pokepaste-form');
+        const pokepasteStatus = document.getElementById('pokepaste-status');
         const searchableSelects = document.querySelectorAll('.js-searchable-select');
         const ratingElo = document.getElementById('rating-elo');
         const ratingFormat = document.getElementById('rating-format');
@@ -221,6 +266,9 @@
         let ratingHistoryLoaded = false;
         let ratingHistoryPoints = [];
         let ratingChartMeta = null;
+
+        const activeTeamId = Number(document.body?.dataset?.activeTeamId || '');
+        const teamAddButton = document.getElementById('team-add');
 
         replayForm?.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -235,7 +283,7 @@
                 const response = await fetch('/api/ingest_replay', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url })
+                    body: JSON.stringify({ url, team_id: activeTeamId })
                 });
                 const payload = await response.json();
                 if (response.ok) {
@@ -290,7 +338,7 @@
                 const response = await fetch('/api/ingest_replay_bulk', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ urls })
+                    body: JSON.stringify({ urls, team_id: activeTeamId })
                 });
                 const payload = await response.json();
                 if (response.ok) {
@@ -310,7 +358,7 @@
             event.preventDefault();
             replayFileStatus.textContent = 'Importing replays.txt...';
             try {
-                const response = await fetch('/api/ingest_replay_file', {
+                const response = await fetch(`/api/ingest_replay_file?team_id=${encodeURIComponent(activeTeamId)}`, {
                     method: 'POST'
                 });
                 const payload = await response.json();
@@ -323,6 +371,34 @@
                 }
             } catch (err) {
                 replayFileStatus.textContent = 'replays.txt import failed.';
+            }
+        });
+
+        pokepasteForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const input = pokepasteForm.querySelector('input[name="pokepaste_url"]');
+            const url = input?.value?.trim();
+            if (!url) {
+                pokepasteStatus.textContent = 'Plak eerst een Pokepaste URL.';
+                return;
+            }
+            pokepasteStatus.textContent = 'Importing nicknames...';
+            try {
+                const response = await fetch('/api/team_pokepaste', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url, team_id: activeTeamId })
+                });
+                const payload = await response.json();
+                if (response.ok && payload.ok) {
+                    pokepasteStatus.textContent = `Geïmporteerd: ${payload.count} nicknames.`;
+                    input.value = '';
+                    window.location.reload();
+                } else {
+                    pokepasteStatus.textContent = payload.error || 'Pokepaste import failed.';
+                }
+            } catch (err) {
+                pokepasteStatus.textContent = 'Pokepaste import failed.';
             }
         });
 
@@ -414,7 +490,7 @@
         const loadRating = async () => {
             if (!ratingElo || !ratingFormat) return;
             try {
-                const response = await fetch('/api/showdown_rating?user=spodermees');
+            const response = await fetch(`/api/showdown_rating?user=spodermees&team_id=${encodeURIComponent(activeTeamId)}`);
                 const payload = await response.json();
                 if (!response.ok || !payload.ok) {
                     ratingElo.textContent = 'N/A';
@@ -537,7 +613,7 @@
             if (ratingHistoryLoaded) return;
             ratingHistoryLoaded = true;
             try {
-                const response = await fetch('/api/rating_history?user=spodermees');
+            const response = await fetch(`/api/rating_history?user=spodermees&team_id=${encodeURIComponent(activeTeamId)}`);
                 const payload = await response.json();
                 if (!response.ok || !payload.ok) {
                     ratingHistoryPoints = [];
@@ -628,6 +704,38 @@
         ratingCanvas?.addEventListener('mousemove', updateRatingTooltip);
         ratingCanvas?.addEventListener('mouseleave', () => {
             ratingChart?.removeAttribute('data-tooltip');
+        });
+
+        const teamSelect = document.getElementById('team-select');
+        const prepLink = document.getElementById('prep-link');
+        const updatePrepLink = () => {
+            if (!prepLink || !teamSelect?.value) return;
+            prepLink.href = `/prep?team_id=${encodeURIComponent(teamSelect.value)}`;
+        };
+        updatePrepLink();
+        teamSelect?.addEventListener('change', () => {
+            const value = teamSelect.value;
+            if (value) {
+                window.location.href = `/?team_id=${encodeURIComponent(value)}`;
+            }
+        });
+
+        teamAddButton?.addEventListener('click', async () => {
+            const name = window.prompt('Team naam?');
+            if (!name) return;
+            try {
+                const response = await fetch('/api/prep_teams', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                const payload = await response.json();
+                if (response.ok && payload.ok) {
+                    window.location.href = `/?team_id=${encodeURIComponent(payload.id)}`;
+                }
+            } catch (err) {
+                // ignore
+            }
         });
 
         document.addEventListener('click', (event) => {

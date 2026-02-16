@@ -6,6 +6,7 @@ import re
 import sqlite3
 import sys
 import urllib.request
+from urllib.parse import urlparse
 from datetime import datetime
 from pathlib import Path
 from typing import Iterable
@@ -125,6 +126,20 @@ def init_db() -> None:
     _ensure_column(db, "matches", "my_side", "TEXT")
     _ensure_column(db, "matches", "rating_user", "TEXT")
     _ensure_column(db, "matches", "rating_after", "INTEGER")
+    _ensure_column(db, "matches", "team_id", "INTEGER")
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS team_pokemon (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            team_id INTEGER NOT NULL,
+            nickname TEXT NOT NULL,
+            species TEXT,
+            source_url TEXT,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(team_id) REFERENCES prep_teams(id)
+        );
+        """
+    )
     db.execute(
         """
         CREATE TABLE IF NOT EXISTS match_nicknames (
@@ -189,6 +204,16 @@ def init_db() -> None:
     )
     db.execute(
         """
+        CREATE TABLE IF NOT EXISTS prep_teams (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+        """
+    )
+    db.execute(
+        """
         CREATE TABLE IF NOT EXISTS prep_matchups (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
@@ -196,6 +221,7 @@ def init_db() -> None:
         );
         """
     )
+    _ensure_column(db, "prep_matchups", "team_id", "INTEGER")
     db.execute(
         """
         CREATE TABLE IF NOT EXISTS prep_matchup_notes (
@@ -669,17 +695,17 @@ def parse_replay_line(line: str) -> dict:
     return result
 
 
-def get_or_create_live_match() -> int:
+def get_or_create_live_match(team_id: int) -> int:
     db = get_db()
     row = db.execute(
-        "SELECT id FROM matches WHERE name = ? ORDER BY id DESC LIMIT 1",
-        ("Live",),
+        "SELECT id FROM matches WHERE name = ? AND team_id = ? ORDER BY id DESC LIMIT 1",
+        ("Live", team_id),
     ).fetchone()
     if row:
         return row["id"]
     cursor = db.execute(
-        "INSERT INTO matches (name, created_at) VALUES (?, ?)",
-        ("Live", datetime.utcnow().isoformat(timespec="seconds")),
+        "INSERT INTO matches (name, created_at, team_id) VALUES (?, ?, ?)",
+        ("Live", datetime.utcnow().isoformat(timespec="seconds"), team_id),
     )
     match_id = cursor.lastrowid
     db.execute(
@@ -764,6 +790,160 @@ def list_prep_matchups() -> list[dict]:
     return [dict(row) for row in rows]
 
 
+def list_prep_matchups_for_team(team_id: int) -> list[dict]:
+    db = get_db()
+    rows = db.execute(
+        """
+        SELECT id, title, updated_at
+        FROM prep_matchups
+        WHERE team_id = ?
+        ORDER BY updated_at DESC, id DESC
+        """,
+        (team_id,),
+    ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def list_prep_teams() -> list[dict]:
+    db = get_db()
+    rows = db.execute(
+        "SELECT id, name, updated_at FROM prep_teams ORDER BY updated_at DESC, id DESC"
+    ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def get_team_by_id(team_id: int) -> dict | None:
+    db = get_db()
+    row = db.execute(
+        "SELECT id, name, updated_at FROM prep_teams WHERE id = ?",
+        (team_id,),
+    ).fetchone()
+    return dict(row) if row else None
+
+
+def get_or_create_default_team() -> dict:
+    db = get_db()
+    row = db.execute(
+        "SELECT id, name, updated_at FROM prep_teams ORDER BY id ASC LIMIT 1"
+    ).fetchone()
+    if row:
+        return dict(row)
+    now = datetime.utcnow().isoformat(timespec="seconds")
+    cursor = db.execute(
+        "INSERT INTO prep_teams (name, created_at, updated_at) VALUES (?, ?, ?)",
+        ("Team 1", now, now),
+    )
+    db.commit()
+    return {"id": cursor.lastrowid, "name": "Team 1", "updated_at": now}
+
+
+def backfill_prep_matchups_team(team_id: int) -> None:
+    db = get_db()
+    db.execute(
+        "UPDATE prep_matchups SET team_id = ? WHERE team_id IS NULL",
+        (team_id,),
+    )
+    db.commit()
+
+
+def backfill_matches_team(team_id: int) -> None:
+    db = get_db()
+    db.execute(
+        "UPDATE matches SET team_id = ? WHERE team_id IS NULL",
+        (team_id,),
+    )
+    db.commit()
+
+
+def resolve_team_id(raw_value: object | None) -> int:
+    default_team = get_or_create_default_team()
+    backfill_prep_matchups_team(default_team["id"])
+    backfill_matches_team(default_team["id"])
+    raw = str(raw_value or "").strip()
+    if raw.isdigit():
+        team = get_team_by_id(int(raw))
+        if team:
+            return team["id"]
+    return default_team["id"]
+
+
+def list_team_pokemon(team_id: int) -> list[dict]:
+    db = get_db()
+    rows = db.execute(
+        """
+        SELECT nickname, species, source_url, created_at
+        FROM team_pokemon
+        WHERE team_id = ?
+        ORDER BY id DESC
+        """,
+        (team_id,),
+    ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def save_team_pokemon(team_id: int, entries: list[dict], source_url: str | None) -> None:
+    db = get_db()
+    db.execute("DELETE FROM team_pokemon WHERE team_id = ?", (team_id,))
+    now = datetime.utcnow().isoformat(timespec="seconds")
+    if entries:
+        db.executemany(
+            """
+            INSERT INTO team_pokemon (team_id, nickname, species, source_url, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    team_id,
+                    entry.get("nickname", ""),
+                    entry.get("species"),
+                    source_url,
+                    now,
+                )
+                for entry in entries
+                if entry.get("nickname")
+            ],
+        )
+    db.commit()
+
+
+def _normalize_pokepaste_url(url: str) -> str | None:
+    value = url.strip()
+    if not value:
+        return None
+    parsed = urlparse(value)
+    if not parsed.netloc:
+        return None
+    if "pokepast.es" not in parsed.netloc:
+        return None
+    if parsed.path.endswith("/raw"):
+        return value
+    return value.rstrip("/") + "/raw"
+
+
+def _parse_pokepaste_nicknames(raw_text: str) -> list[dict]:
+    results: list[dict] = []
+    header_pattern = re.compile(r"^(?P<name>.+?)\s+@\s+.+$")
+    nickname_pattern = re.compile(r"^(?P<nick>.+?)\s+\((?P<species>[^)]+)\)$")
+    for line in raw_text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        header_match = header_pattern.match(line)
+        if not header_match:
+            continue
+        name_part = header_match.group("name").strip()
+        nick_match = nickname_pattern.match(name_part)
+        if nick_match:
+            nickname = nick_match.group("nick").strip()
+            species = nick_match.group("species").strip()
+            if nickname and nickname != species:
+                results.append({"nickname": nickname, "species": species})
+        else:
+            # No nickname, skip because user wants nicknames only
+            continue
+    return results
+
+
 def get_prep_matchup_notes(matchup_id: int) -> dict[str, str]:
     db = get_db()
     rows = db.execute(
@@ -776,32 +956,58 @@ def get_prep_matchup_notes(matchup_id: int) -> dict[str, str]:
 @app.route("/")
 def index():
     db = get_db()
+    active_team_id = resolve_team_id(request.args.get("team_id"))
+    active_team = get_team_by_id(active_team_id)
+    teams = list_prep_teams()
+    team_pokemon = list_team_pokemon(active_team_id)
+
     matches = db.execute(
-        "SELECT id, name, created_at, format, winner, result, replay_url FROM matches ORDER BY id DESC"
+        """
+        SELECT id, name, created_at, format, winner, result, replay_url
+        FROM matches
+        WHERE team_id = ?
+        ORDER BY id DESC
+        """,
+        (active_team_id,),
     ).fetchall()
     totals = db.execute(
-        "SELECT COUNT(*) AS total_events FROM events"
+        """
+        SELECT COUNT(*) AS total_events
+        FROM events
+        INNER JOIN matches ON matches.id = events.match_id
+        WHERE matches.team_id = ?
+        """,
+        (active_team_id,),
     ).fetchone()
     damage_stats = db.execute(
         """
         SELECT
             COUNT(*) AS total_hits,
-            MIN(value_low) AS min_damage,
-            MAX(value_high) AS max_damage,
-            AVG((value_low + value_high) / 2.0) AS avg_damage
+            MIN(events.value_low) AS min_damage,
+            MAX(events.value_high) AS max_damage,
+            AVG((events.value_low + events.value_high) / 2.0) AS avg_damage
         FROM events
-        WHERE event_type = 'damage' AND value_low IS NOT NULL AND value_high IS NOT NULL
-        """
+        INNER JOIN matches ON matches.id = events.match_id
+        WHERE matches.team_id = ?
+          AND events.event_type = 'damage'
+          AND events.value_low IS NOT NULL
+          AND events.value_high IS NOT NULL
+        """,
+        (active_team_id,),
     ).fetchone()
     attacker = request.args.get("attacker", "").strip()
     defender = request.args.get("defender", "").strip()
 
     name_rows = db.execute(
         """
-        SELECT actor, target
+        SELECT events.actor, events.target
         FROM events
-        WHERE event_type = 'damage' AND (actor IS NOT NULL OR target IS NOT NULL)
-        """
+        INNER JOIN matches ON matches.id = events.match_id
+        WHERE matches.team_id = ?
+          AND events.event_type = 'damage'
+          AND (events.actor IS NOT NULL OR events.target IS NOT NULL)
+        """,
+        (active_team_id,),
     ).fetchall()
     unique_names = sorted(
         {
@@ -818,9 +1024,13 @@ def index():
             """
             SELECT events.actor, events.target, events.move, events.value_low, events.value_high, matches.replay_url
             FROM events
-            LEFT JOIN matches ON matches.id = events.match_id
-            WHERE events.event_type = 'damage' AND events.value_low IS NOT NULL AND events.value_high IS NOT NULL
-            """
+            INNER JOIN matches ON matches.id = events.match_id
+            WHERE matches.team_id = ?
+              AND events.event_type = 'damage'
+              AND events.value_low IS NOT NULL
+              AND events.value_high IS NOT NULL
+            """,
+            (active_team_id,),
         ).fetchall()
 
         def build_breakdown(attacker_name: str, defender_name: str) -> list[dict]:
@@ -888,16 +1098,22 @@ def index():
         damage_lookup=damage_lookup,
         attacker_options=attacker_options,
         opponent_options=opponent_options,
+        teams=teams,
+        active_team=active_team,
+        team_pokemon=team_pokemon,
     )
 
 
 @app.route("/prep", methods=["GET", "POST"])
 def prep():
-    matchups = list_prep_matchups()
+    active_team_id = resolve_team_id(request.args.get("team_id"))
+    active_team = get_team_by_id(active_team_id)
+    matchups = list_prep_matchups_for_team(active_team_id)
     return render_template(
         "prep.html",
         sections=PREP_SECTIONS,
         matchups=matchups,
+        active_team=active_team,
     )
 
 
@@ -905,16 +1121,70 @@ def prep():
 def api_create_prep_matchup():
     data = request.get_json(silent=True) or {}
     title = str(data.get("title", "")).strip()
+    team_id_raw = str(data.get("team_id", "")).strip()
     if not title:
         return {"ok": False, "error": "missing title"}, 400
     db = get_db()
+    default_team = get_or_create_default_team()
+    backfill_prep_matchups_team(default_team["id"])
+    team_id = default_team["id"]
+    if team_id_raw.isdigit():
+        team = get_team_by_id(int(team_id_raw))
+        if team:
+            team_id = team["id"]
     now = datetime.utcnow().isoformat(timespec="seconds")
     cursor = db.execute(
-        "INSERT INTO prep_matchups (title, updated_at) VALUES (?, ?)",
-        (title, now),
+        "INSERT INTO prep_matchups (title, updated_at, team_id) VALUES (?, ?, ?)",
+        (title, now, team_id),
     )
     db.commit()
-    return {"ok": True, "id": cursor.lastrowid, "title": title}
+    return {"ok": True, "id": cursor.lastrowid, "title": title, "team_id": team_id}
+
+
+@app.route("/api/prep_teams", methods=["POST"])
+def api_create_prep_team():
+    data = request.get_json(silent=True) or {}
+    name = str(data.get("name", "")).strip()
+    if not name:
+        return {"ok": False, "error": "missing name"}, 400
+    db = get_db()
+    now = datetime.utcnow().isoformat(timespec="seconds")
+    cursor = db.execute(
+        "INSERT INTO prep_teams (name, created_at, updated_at) VALUES (?, ?, ?)",
+        (name, now, now),
+    )
+    db.commit()
+    return {"ok": True, "id": cursor.lastrowid, "name": name}
+
+
+@app.route("/api/team_pokepaste", methods=["POST"])
+def api_team_pokepaste():
+    data = request.get_json(silent=True) or {}
+    url_value = str(data.get("url", "")).strip()
+    team_id = resolve_team_id(data.get("team_id"))
+    raw_url = _normalize_pokepaste_url(url_value)
+    if not raw_url:
+        return {"ok": False, "error": "invalid url"}, 400
+
+    try:
+        req = urllib.request.Request(
+            raw_url,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                "Accept": "text/plain,*/*;q=0.8",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            raw_text = response.read().decode("utf-8", errors="ignore")
+    except Exception:
+        return {"ok": False, "error": "failed to fetch"}, 502
+
+    nicknames = _parse_pokepaste_nicknames(raw_text)
+    if not nicknames:
+        return {"ok": False, "error": "no nicknames found"}, 400
+
+    save_team_pokemon(team_id, nicknames, url_value)
+    return {"ok": True, "count": len(nicknames), "nicknames": nicknames}
 
 
 @app.route("/api/prep_matchups/<int:matchup_id>", methods=["GET"])
@@ -1117,13 +1387,14 @@ def upload_log():
     content = uploaded.read().decode("utf-8", errors="ignore")
     lines = content.splitlines()
 
+    team_id = resolve_team_id(request.form.get("team_id"))
     db = get_db()
     meta = parse_match_meta(lines)
     result = compute_result(meta)
     cursor = db.execute(
         """
-        INSERT INTO matches (name, created_at, format, player1, player2, winner, result)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO matches (name, created_at, format, player1, player2, winner, result, team_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             "Upload",
@@ -1133,6 +1404,7 @@ def upload_log():
             meta.get("player2"),
             meta.get("winner"),
             result,
+            team_id,
         ),
     )
     match_id = cursor.lastrowid
@@ -1209,6 +1481,7 @@ def update_nicknames(match_id: int):
 def api_ingest():
     data = request.get_json(silent=True) or {}
     log_text = str(data.get("log", ""))
+    team_id = resolve_team_id(data.get("team_id"))
 
     lines = log_text.splitlines()
     events, state, log_lines = parse_log_stream(lines, state={})
@@ -1219,8 +1492,8 @@ def api_ingest():
     db = get_db()
     cursor = db.execute(
         """
-        INSERT INTO matches (name, created_at, format, player1, player2, winner, result)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO matches (name, created_at, format, player1, player2, winner, result, team_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             "API Upload",
@@ -1230,6 +1503,7 @@ def api_ingest():
             meta.get("player2"),
             meta.get("winner"),
             result,
+            team_id,
         ),
     )
     match_id = cursor.lastrowid
@@ -1291,7 +1565,8 @@ def api_ingest_line():
     if not line:
         return {"status": "ignored"}
 
-    match_id = get_or_create_live_match()
+    team_id = resolve_team_id(data.get("team_id") or request.args.get("team_id"))
+    match_id = get_or_create_live_match(team_id)
     state = get_match_state(match_id)
     events, new_state, log_lines = parse_log_stream([line], state=state)
     apply_match_meta(match_id, parse_match_meta([line]))
@@ -1351,16 +1626,19 @@ def api_showdown_rating():
     username = (request.args.get("user") or "").strip()
     if not username:
         return {"ok": False, "error": "missing user"}, 400
+    team_id = resolve_team_id(request.args.get("team_id"))
 
     db = get_db()
     rating_rows = db.execute(
         """
         SELECT rating_user, rating_after, format, created_at
         FROM matches
-        WHERE rating_user IS NOT NULL AND rating_after IS NOT NULL
+                WHERE rating_user IS NOT NULL AND rating_after IS NOT NULL
+                    AND team_id = ?
         ORDER BY id DESC
         LIMIT 200
         """,
+                (team_id,),
     ).fetchall()
     normalized_user = normalize_name(username)
     for row in rating_rows:
@@ -1377,12 +1655,15 @@ def api_showdown_rating():
 
     raw_rows = db.execute(
         """
-        SELECT raw_line, match_id
-        FROM log_lines
-        WHERE raw_line LIKE '%rating:%'
-        ORDER BY id DESC
-        LIMIT 500
+                SELECT log_lines.raw_line, log_lines.match_id
+                FROM log_lines
+                INNER JOIN matches ON matches.id = log_lines.match_id
+                WHERE log_lines.raw_line LIKE '%rating:%'
+                    AND matches.team_id = ?
+                ORDER BY log_lines.id DESC
+                LIMIT 500
         """,
+                (team_id,),
     ).fetchall()
     for row in raw_rows:
         raw_line = row["raw_line"]
@@ -1441,6 +1722,7 @@ def api_rating_history():
     username = (request.args.get("user") or "").strip()
     if not username:
         return {"ok": False, "error": "missing user"}, 400
+    team_id = resolve_team_id(request.args.get("team_id"))
 
     format_filter = (request.args.get("format") or "").strip()
     normalized_user = normalize_name(username)
@@ -1451,10 +1733,12 @@ def api_rating_history():
         """
         SELECT rating_user, rating_after, format, created_at
         FROM matches
-        WHERE rating_user IS NOT NULL AND rating_after IS NOT NULL
+                WHERE rating_user IS NOT NULL AND rating_after IS NOT NULL
+                    AND team_id = ?
         ORDER BY id ASC
         LIMIT 500
         """,
+                (team_id,),
     ).fetchall()
 
     points = []
@@ -1479,9 +1763,11 @@ def api_rating_history():
             FROM log_lines
             LEFT JOIN matches ON matches.id = log_lines.match_id
             WHERE log_lines.raw_line LIKE '%rating:%'
+              AND matches.team_id = ?
             ORDER BY log_lines.id ASC
             LIMIT 800
             """,
+            (team_id,),
         ).fetchall()
         for row in raw_rows:
             rating_match = RAW_RATING_PATTERN.match(row["raw_line"])
@@ -1549,7 +1835,7 @@ def _extract_replay_urls(text: str) -> list[str]:
     return urls
 
 
-def _ingest_replay_url(replay_url: str) -> dict:
+def _ingest_replay_url(replay_url: str, team_id: int) -> dict:
     normalized = _normalize_replay_url(replay_url)
     if not normalized:
         return {"ok": False, "error": "missing url"}
@@ -1581,8 +1867,8 @@ def _ingest_replay_url(replay_url: str) -> dict:
     db = get_db()
     cursor = db.execute(
         """
-        INSERT INTO matches (name, created_at, format, player1, player2, winner, result, replay_url)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO matches (name, created_at, format, player1, player2, winner, result, replay_url, team_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             "Replay",
@@ -1593,6 +1879,7 @@ def _ingest_replay_url(replay_url: str) -> dict:
             meta.get("winner"),
             result,
             _strip_replay_json(normalized),
+            team_id,
         ),
     )
     match_id = cursor.lastrowid
@@ -1651,6 +1938,7 @@ def _ingest_replay_url(replay_url: str) -> dict:
 def api_ingest_replay():
     data = request.get_json(silent=True) or {}
     replay_url = str(data.get("url", "")).strip()
+    team_id = resolve_team_id(data.get("team_id") or request.args.get("team_id"))
     if not replay_url:
         replay_url = (request.form.get("url") or "").strip()
     if not replay_url:
@@ -1661,7 +1949,7 @@ def api_ingest_replay():
     if not replay_url:
         return {"status": "error", "message": "missing url"}, 400
 
-    result = _ingest_replay_url(replay_url)
+    result = _ingest_replay_url(replay_url, team_id)
     if not result.get("ok"):
         return {"status": "error", "message": result.get("error", "failed to fetch replay")}, 400
     return {"status": "ok", "match_id": result["match_id"], "events": result["events"]}
@@ -1672,6 +1960,7 @@ def api_ingest_replay_bulk():
     data = request.get_json(silent=True) or {}
     urls = data.get("urls")
     text = str(data.get("text", ""))
+    team_id = resolve_team_id(data.get("team_id") or request.args.get("team_id"))
     url_list: list[str] = []
 
     if isinstance(urls, list):
@@ -1687,7 +1976,7 @@ def api_ingest_replay_bulk():
     results = []
     ok_count = 0
     for url in url_list:
-        result = _ingest_replay_url(url)
+        result = _ingest_replay_url(url, team_id)
         if result.get("ok"):
             ok_count += 1
         results.append(result | {"input": url})
@@ -1705,6 +1994,7 @@ def api_ingest_replay_file():
     data = request.get_json(silent=True) or {}
     urls = data.get("urls")
     text = str(data.get("text", ""))
+    team_id = resolve_team_id(data.get("team_id") or request.args.get("team_id"))
 
     url_list: list[str] = []
     if isinstance(urls, list):
@@ -1734,7 +2024,7 @@ def api_ingest_replay_file():
     results = []
     ok_count = 0
     for url in url_list:
-        result = _ingest_replay_url(url)
+        result = _ingest_replay_url(url, team_id)
         if result.get("ok"):
             ok_count += 1
         results.append(result | {"input": url})
@@ -1754,7 +2044,8 @@ def api_ingest_replay_options():
 
 @app.route("/live")
 def live_match():
-    match_id = get_or_create_live_match()
+    team_id = resolve_team_id(request.args.get("team_id"))
+    match_id = get_or_create_live_match(team_id)
     return redirect(url_for("match_detail", match_id=match_id))
 
 
