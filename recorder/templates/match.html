@@ -9,18 +9,18 @@
 <body>
     <header class="app-header">
         <div>
-            <h1>{{ match.name }}</h1>
+            <h1 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>{{ match.name }}</h1>
             <p>Created {{ match.created_at }}</p>
         </div>
         <div class="actions">
-            <a class="button" href="{{ url_for('match_log', match_id=match.id) }}">Log</a>
-            <a class="button" href="{{ url_for('index') }}">Back</a>
+            <a class="button button-with-icon" href="{{ url_for('match_log', match_id=match.id) }}"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Log</a>
+            <a class="button button-with-icon" href="{{ url_for('index') }}"><span class="poke-icon poke-icon-bolt" aria-hidden="true"></span>Back</a>
         </div>
     </header>
 
     <main class="container">
         <section class="card">
-            <h2>Nickname map (optional)</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Nickname map (optional)</h2>
             <form class="form-grid" action="{{ url_for('update_nicknames', match_id=match.id) }}" method="post">
                 <label>
                     My nicknames (comma or line separated)
@@ -36,7 +36,7 @@
         </section>
 
         <section class="card">
-            <h2>Mijn kant</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-bolt" aria-hidden="true"></span>Mijn kant</h2>
             <form class="form-grid" action="{{ url_for('update_match_side', match_id=match.id) }}" method="post">
                 <label>
                     Mijn kant in de replay
@@ -52,7 +52,7 @@
         </section>
 
         <section class="card">
-            <h2>Damage range lookup</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>Damage range lookup</h2>
             <form class="form-grid" method="get" action="{{ url_for('match_detail', match_id=match.id) }}">
                 <label>
                     My Pokémon
@@ -93,7 +93,7 @@
         </section>
 
         <section class="card">
-            <h2>Extracted events</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Extracted events</h2>
             {% if events %}
                 <table>
                     <thead>

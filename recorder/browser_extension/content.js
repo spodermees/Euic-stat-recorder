@@ -1,9 +1,22 @@
 (() => {
-    const API_INGEST_URL = "http://127.0.0.1:5000/api/ingest_line";
-    const API_POKE_URL = "http://127.0.0.1:5000/api/poke";
-
     const seenNodes = new WeakSet();
     let sentCount = 0;
+
+    function sendMessage(message) {
+        return new Promise((resolve) => {
+            try {
+                chrome.runtime.sendMessage(message, (response) => {
+                    if (chrome.runtime.lastError) {
+                        resolve({ ok: false, error: chrome.runtime.lastError.message });
+                        return;
+                    }
+                    resolve(response || { ok: false });
+                });
+            } catch (_error) {
+                resolve({ ok: false });
+            }
+        });
+    }
 
     function ensureBadge() {
         let badge = document.getElementById("euic-recorder-bridge-badge");
@@ -39,16 +52,7 @@
     }
 
     async function pokeRecorder(reason) {
-        try {
-            await fetch(API_POKE_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ source: "extension", reason }),
-                cache: "no-store",
-            });
-        } catch (error) {
-            console.warn("EUIC recorder poke failed", error);
-        }
+        await sendMessage({ action: "POKE", reason });
     }
 
     async function sendLine(line) {
@@ -56,19 +60,24 @@
             return;
         }
 
-        try {
-            await fetch(API_INGEST_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ line }),
-                cache: "no-store",
-            });
+        const result = await sendMessage({ action: "SEND_OR_QUEUE_LINE", line });
+        if (result?.ok && result?.sent) {
             sentCount += 1;
             setBadge(`Recorder bridge: sent ${sentCount}`);
-        } catch (error) {
-            setBadge("Recorder bridge: error");
-            console.warn("EUIC recorder bridge error", error);
+            return;
         }
+
+        if (result?.ok && result?.queued) {
+            setBadge(`Recorder bridge: queued ${result.queueCount}`);
+            return;
+        }
+
+        if (result?.ok && result?.dropped) {
+            setBadge("Recorder bridge: disabled");
+            return;
+        }
+
+        setBadge("Recorder bridge: error");
     }
 
     function collectLinesFromLog(logRoot) {

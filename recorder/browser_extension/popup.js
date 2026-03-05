@@ -1,9 +1,8 @@
 const LOCAL_BASE_URL = "http://127.0.0.1:5000";
-const POKE_URL = `${LOCAL_BASE_URL}/api/poke`;
 const PREP_TEAMS_URL = `${LOCAL_BASE_URL}/api/prep_teams`;
-const REPLAY_BULK_URL = `${LOCAL_BASE_URL}/api/ingest_replay_bulk`;
 const STORAGE_KEY_REPLAY_LIST = "replayList";
 const STORAGE_KEY_TEAM_ID = "selectedTeamId";
+const STORAGE_KEY_TEAM_NAME = "selectedTeamName";
 
 const statusEl = document.getElementById("status");
 const teamSelect = document.getElementById("team-select");
@@ -14,7 +13,23 @@ const sendReplaysButton = document.getElementById("send-replays");
 
 function setStatus(text, isError = false) {
     statusEl.textContent = text;
-    statusEl.style.color = isError ? "#ff9d9d" : "#9ad08f";
+    statusEl.style.color = isError ? "#ffd0cc" : "#d5ffe3";
+}
+
+function sendMessage(message) {
+    return new Promise((resolve) => {
+        try {
+            chrome.runtime.sendMessage(message, (response) => {
+                if (chrome.runtime.lastError) {
+                    resolve({ ok: false, error: chrome.runtime.lastError.message });
+                    return;
+                }
+                resolve(response || { ok: false });
+            });
+        } catch (_error) {
+            resolve({ ok: false });
+        }
+    });
 }
 
 function getStorage(keys) {
@@ -29,27 +44,23 @@ function setStorage(values) {
     });
 }
 
-async function isLocalAppRunning() {
-    try {
-        const response = await fetch(POKE_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ source: "popup", reason: "send-replays" }),
-            cache: "no-store",
-        });
-        return response.ok;
-    } catch (_error) {
-        return false;
-    }
-}
-
 async function restore() {
     const data = await getStorage({
         [STORAGE_KEY_REPLAY_LIST]: "",
         [STORAGE_KEY_TEAM_ID]: "",
+        [STORAGE_KEY_TEAM_NAME]: "",
     });
     replayListInput.value = (data[STORAGE_KEY_REPLAY_LIST] || "").trim();
-    await loadTeams(data[STORAGE_KEY_TEAM_ID]);
+    await loadTeams(data[STORAGE_KEY_TEAM_ID], data[STORAGE_KEY_TEAM_NAME]);
+    await refreshQueueStatus();
+}
+
+async function refreshQueueStatus() {
+    const response = await sendMessage({ action: "QUEUE_STATUS" });
+    if (!response?.ok) return;
+    if (Number(response.count) > 0) {
+        setStatus(`Wachtrij: ${response.count} pending`);
+    }
 }
 
 function setTeamOptions(teams, preferredTeamId) {
@@ -77,7 +88,7 @@ function setTeamOptions(teams, preferredTeamId) {
     teamSelect.value = hasPreferred ? preferred : String(teams[0].id);
 }
 
-async function loadTeams(preferredTeamId = "") {
+async function loadTeams(preferredTeamId = "", preferredTeamName = "") {
     try {
         const response = await fetch(PREP_TEAMS_URL, { cache: "no-store" });
         const payload = await response.json().catch(() => ({}));
@@ -87,12 +98,32 @@ async function loadTeams(preferredTeamId = "") {
 
         setTeamOptions(payload.teams, preferredTeamId);
         const selectedTeamId = String(teamSelect.value || "").trim();
+        const selectedOption = teamSelect.selectedOptions?.[0];
+        const selectedTeamName = String(selectedOption?.textContent || "").trim();
         if (selectedTeamId) {
-            await setStorage({ [STORAGE_KEY_TEAM_ID]: selectedTeamId });
+            await setStorage({
+                [STORAGE_KEY_TEAM_ID]: selectedTeamId,
+                [STORAGE_KEY_TEAM_NAME]: selectedTeamName,
+            });
         }
     } catch (_error) {
+        const fallbackTeamId = String(preferredTeamId || "").trim();
+        const fallbackTeamName = String(preferredTeamName || "").trim();
+        if (fallbackTeamId) {
+            teamSelect.innerHTML = "";
+            const option = document.createElement("option");
+            option.value = fallbackTeamId;
+            option.textContent = fallbackTeamName
+                ? `${fallbackTeamName} (offline)`
+                : `Team ${fallbackTeamId} (offline)`;
+            teamSelect.appendChild(option);
+            teamSelect.disabled = false;
+            teamSelect.value = fallbackTeamId;
+            setStatus("Teams API offline, maar queue blijft beschikbaar.");
+            return;
+        }
         setTeamOptions([], "");
-        setStatus("Kon teams niet laden. Draait app.py?", true);
+        setStatus("Kon teams niet laden. Start app.py of kies eerst een team.", true);
     }
 }
 
@@ -108,7 +139,12 @@ async function persistReplayList() {
 
 async function persistSelectedTeam() {
     const selectedTeamId = String(teamSelect.value || "").trim();
-    await setStorage({ [STORAGE_KEY_TEAM_ID]: selectedTeamId });
+    const selectedOption = teamSelect.selectedOptions?.[0];
+    const selectedTeamName = String(selectedOption?.textContent || "").trim();
+    await setStorage({
+        [STORAGE_KEY_TEAM_ID]: selectedTeamId,
+        [STORAGE_KEY_TEAM_NAME]: selectedTeamName,
+    });
 }
 
 async function saveReplay() {
@@ -152,37 +188,48 @@ async function sendReplaysToApi() {
         return;
     }
 
-    const appRunning = await isLocalAppRunning();
-    if (!appRunning) {
-        setStatus("app.py draait niet. Start met: python app.py", true);
+    const result = await sendMessage({
+        action: "SEND_OR_QUEUE_REPLAY_BULK",
+        urls,
+        teamId: Number(selectedTeamId),
+    });
+
+    if (!result?.ok) {
+        setStatus("Kon replay request niet verwerken.", true);
         return;
     }
 
-    try {
-        const response = await fetch(REPLAY_BULK_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ urls, team_id: Number(selectedTeamId) }),
-            cache: "no-store",
-        });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok || payload.status !== "ok") {
-            const message = payload?.message || "Upload mislukt.";
-            setStatus(message, true);
-            return;
-        }
+    replayListInput.value = "";
+    await persistReplayList();
 
-        replayListInput.value = "";
-        await persistReplayList();
-        const ok = payload?.summary?.ok ?? 0;
-        const failed = payload?.summary?.failed ?? 0;
+    if (result.sent) {
+        const ok = result?.summary?.ok ?? urls.length;
+        const failed = result?.summary?.failed ?? 0;
         setStatus(`Verstuurd: ${ok} ok, ${failed} failed.`);
-    } catch (_error) {
-        setStatus("Kon API niet bereiken.", true);
+    } else if (result.queued) {
+        setStatus(`API offline: opgeslagen in wachtrij (${result.queueCount}).`);
     }
+}
+
+async function flushQueueNow() {
+    const response = await sendMessage({ action: "FLUSH_QUEUE_NOW" });
+    if (!response?.ok) {
+        setStatus("Wachtrij flush mislukt.", true);
+        return;
+    }
+    if (response.remaining > 0) {
+        setStatus(`Nog ${response.remaining} in wachtrij.`);
+        return;
+    }
+    if (response.sent > 0) {
+        setStatus(`Wachtrij verstuurd (${response.sent}).`);
+        return;
+    }
+    setStatus("Geen pending items in wachtrij.");
 }
 saveReplayButton.addEventListener("click", saveReplay);
 sendReplaysButton.addEventListener("click", sendReplaysToApi);
 replayListInput.addEventListener("blur", persistReplayList);
 teamSelect.addEventListener("change", persistSelectedTeam);
+window.addEventListener("focus", flushQueueNow);
 restore();

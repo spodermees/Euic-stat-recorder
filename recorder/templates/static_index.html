@@ -15,7 +15,7 @@
 <body>
     <header class="app-header">
         <div>
-            <h1>Showdown Recorder</h1>
+            <h1 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>Showdown Recorder</h1>
             <p>Static snapshot for mobile viewing.</p>
         </div>
         <div class="stat">
@@ -26,7 +26,7 @@
 
     <main class="container">
         <section class="card">
-            <h2>Overall damage (all matches)</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Overall damage (all matches)</h2>
             {% if damage_stats.total_hits %}
                 <div class="summary">
                     <span class="chip damage">Min {{ '%.1f'|format(damage_stats.min_damage) }}%</span>
@@ -72,7 +72,7 @@
         </section>
 
         <section class="card">
-            <h2>Matches</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>Matches</h2>
             {% if matches %}
                 <div class="list">
                     {% for match in matches %}
@@ -99,7 +99,7 @@
         </section>
 
         <section class="card">
-            <h2>Prep</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Prep</h2>
             {% if prep_notes %}
                 <div class="prep-grid">
                     {% for section in prep_sections %}
@@ -120,7 +120,7 @@
                 <p class="muted">Nog geen algemene prep-notes.</p>
             {% endif %}
 
-            <h3 style="margin-top: 24px;">Matchups</h3>
+            <h3 class="title-with-icon" style="margin-top: 24px;"><span class="poke-icon poke-icon-bolt" aria-hidden="true"></span>Matchups</h3>
             {% if prep_matchups %}
                 <div class="prep-grid">
                     {% for matchup in prep_matchups %}

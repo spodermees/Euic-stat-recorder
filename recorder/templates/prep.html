@@ -9,17 +9,17 @@
 <body data-active-team-id="{{ active_team.id }}">
     <header class="app-header">
         <div>
-            <h1>Matchup prep</h1>
+            <h1 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>Matchup prep</h1>
             <p>Werk je matchup ideëen uit in grote blokken.</p>
         </div>
         <div class="actions">
-            <a class="button" href="{{ url_for('index', team_id=active_team.id) }}">Back</a>
+            <a class="button button-with-icon" href="{{ url_for('index', team_id=active_team.id) }}"><span class="poke-icon poke-icon-bolt" aria-hidden="true"></span>Back</a>
         </div>
     </header>
 
     <main class="container">
         <section class="card">
-            <h2>Matchups · {{ active_team.name }}</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Matchups · {{ active_team.name }}</h2>
             <div class="prep-toolbar">
                 <input type="text" id="prep-search" placeholder="Zoek matchup...">
                 <form class="prep-create" id="prep-create-form">
@@ -61,7 +61,7 @@
                 <div class="flowchart-card" id="flowchart-card">
                     <div class="flowchart-header">
                         <div>
-                            <h3>Flowchart</h3>
+                            <h3 class="title-with-icon"><span class="poke-icon poke-icon-bolt" aria-hidden="true"></span>Flowchart</h3>
                             <p class="muted">Bouw je gameplan visueel en voeg if/else-logica toe.</p>
                         </div>
                         <div class="flowchart-actions">
@@ -90,7 +90,7 @@
         <div class="modal-content modal-content--wide">
             <header class="modal-header">
                 <div class="modal-header-title">
-                    <h3>Flowchart editor</h3>
+                    <h3 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Flowchart editor</h3>
                     <p class="muted">Bewerk je flowchart in Mermaid of Draw.io.</p>
                 </div>
                 <div class="modal-header-actions">

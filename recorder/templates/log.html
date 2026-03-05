@@ -9,18 +9,18 @@
 <body>
     <header class="app-header">
         <div>
-            <h1>{{ match.name }}</h1>
+            <h1 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>{{ match.name }}</h1>
             <p>Replay log opgeslagen op de server.</p>
         </div>
         <div class="actions">
-            <a class="button" href="{{ url_for('match_detail', match_id=match.id) }}">Match</a>
-            <a class="button" href="{{ url_for('index') }}">Home</a>
+            <a class="button button-with-icon" href="{{ url_for('match_detail', match_id=match.id) }}"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Match</a>
+            <a class="button button-with-icon" href="{{ url_for('index') }}"><span class="poke-icon poke-icon-bolt" aria-hidden="true"></span>Home</a>
         </div>
     </header>
 
     <main class="container">
         <section class="card">
-            <h2>Log</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Log</h2>
             {% if match.replay_url %}
                 <div class="summary" style="margin-bottom: 12px;">
                     <a class="chip" href="{{ match.replay_url }}" target="_blank" rel="noreferrer">Replay</a>

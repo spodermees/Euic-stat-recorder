@@ -9,11 +9,11 @@
 <body data-active-team-id="{{ active_team.id }}">
     <header class="app-header">
         <div>
-            <h1>Showdown Recorder</h1>
+            <h1 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>Showdown Recorder</h1>
             <p>Upload a chat log to extract items and damage ranges.</p>
         </div>
         <div class="actions">
-            <a class="button" id="prep-link" href="{{ url_for('prep', team_id=active_team.id) }}">Prep</a>
+            <a class="button button-with-icon" id="prep-link" href="{{ url_for('prep', team_id=active_team.id) }}"><span class="poke-icon poke-icon-bolt" aria-hidden="true"></span>Prep</a>
             <div class="team-picker">
                 <label class="sr-only" for="team-select">Team</label>
                 <select id="team-select" aria-label="Selecteer team">
@@ -48,7 +48,7 @@
 
     <main class="container">
         <section class="card">
-            <h2>Overall damage (all matches)</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Overall damage (all matches)</h2>
             {% if damage_stats.total_hits %}
                 <div class="summary">
                     <span class="chip damage">Min {{ '%.1f'|format(damage_stats.min_damage) }}%</span>
@@ -147,7 +147,7 @@
         </section>
 
         <section class="card">
-            <h2>Import replay URL</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>Import replay URL</h2>
             <form class="form-grid" id="replay-form">
                 <label>
                     Battle replay URL
@@ -159,7 +159,7 @@
         </section>
 
         <section class="card">
-            <h2>Import Pokepaste (nicknames)</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Import Pokepaste (nicknames)</h2>
             <form class="form-grid" id="pokepaste-form">
                 <label>
                     Pokepaste URL
@@ -192,7 +192,7 @@
         </section>
 
         <section class="card">
-            <h2>Import replay list (.txt)</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>Import replay list (.txt)</h2>
             <form class="form-grid" id="replay-bulk-form">
                 <label>
                     Replay list file (.txt)
@@ -204,7 +204,7 @@
         </section>
 
         <section class="card">
-            <h2>Import replays.txt (server)</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Import replays.txt (server)</h2>
             <form class="form-grid" id="replay-file-form">
                 <button type="submit">Import &amp; clear replays.txt</button>
             </form>
@@ -214,7 +214,7 @@
         <section class="card">
             <details class="collapsible" open>
                 <summary>
-                    <h2>Matches</h2>
+                    <h2 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>Matches</h2>
                     <span class="muted">Toon/verberg lijst</span>
                 </summary>
                 {% if matches %}
@@ -518,6 +518,105 @@
 
         loadRating();
 
+        const drawMiniPokeball = (ctx, x, y, radius = 3.8) => {
+            ctx.save();
+
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.clip();
+
+            ctx.fillStyle = '#e94c42';
+            ctx.fillRect(x - radius, y - radius, radius * 2, radius);
+            ctx.fillStyle = '#f8f8f8';
+            ctx.fillRect(x - radius, y, radius * 2, radius);
+
+            ctx.restore();
+
+            ctx.strokeStyle = '#153b77';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#153b77';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x - radius + 0.3, y);
+            ctx.lineTo(x + radius - 0.3, y);
+            ctx.stroke();
+
+            ctx.fillStyle = '#fdf2d0';
+            ctx.beginPath();
+            ctx.arc(x, y, Math.max(radius * 0.34, 1.4), 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#153b77';
+            ctx.lineWidth = 0.9;
+            ctx.beginPath();
+            ctx.arc(x, y, Math.max(radius * 0.34, 1.4), 0, Math.PI * 2);
+            ctx.stroke();
+        };
+
+        const drawMiniMasterBall = (ctx, x, y, radius = 4.4) => {
+            ctx.save();
+
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.clip();
+
+            ctx.fillStyle = '#7a4fd0';
+            ctx.fillRect(x - radius, y - radius, radius * 2, radius);
+            ctx.fillStyle = '#f8f8f8';
+            ctx.fillRect(x - radius, y, radius * 2, radius);
+
+            ctx.restore();
+
+            ctx.strokeStyle = '#153b77';
+            ctx.lineWidth = 1.1;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#153b77';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x - radius + 0.4, y);
+            ctx.lineTo(x + radius - 0.4, y);
+            ctx.stroke();
+
+            ctx.fillStyle = '#fdf2d0';
+            ctx.beginPath();
+            ctx.arc(x, y, Math.max(radius * 0.34, 1.5), 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#153b77';
+            ctx.lineWidth = 0.9;
+            ctx.beginPath();
+            ctx.arc(x, y, Math.max(radius * 0.34, 1.5), 0, Math.PI * 2);
+            ctx.stroke();
+
+            const sideDotRadius = Math.max(radius * 0.17, 0.85);
+            const sideOffsetX = radius * 0.56;
+            const sideOffsetY = radius * 0.38;
+            ctx.fillStyle = '#f99ad6';
+
+            ctx.beginPath();
+            ctx.arc(x - sideOffsetX, y - sideOffsetY, sideDotRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + sideOffsetX, y - sideOffsetY, sideDotRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#153b77';
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.arc(x - sideOffsetX, y - sideOffsetY, sideDotRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(x + sideOffsetX, y - sideOffsetY, sideDotRadius, 0, Math.PI * 2);
+            ctx.stroke();
+        };
+
         const drawRatingChart = () => {
             if (!ratingCanvas || !ratingChartEmpty || !ratingChartRange) return;
             const ctx = ratingCanvas.getContext('2d');
@@ -593,11 +692,16 @@
             });
             ctx.stroke();
 
-            ctx.fillStyle = '#8cc6ff';
-            plotted.forEach((point) => {
-                ctx.beginPath();
-                ctx.arc(point.x, point.y, 2.8, 0, Math.PI * 2);
-                ctx.fill();
+            const highestIndex = plotted.reduce((bestIndex, point, index, list) => (
+                point.elo >= list[bestIndex].elo ? index : bestIndex
+            ), 0);
+
+            plotted.forEach((point, index) => {
+                if (index === highestIndex) {
+                    drawMiniMasterBall(ctx, point.x, point.y);
+                    return;
+                }
+                drawMiniPokeball(ctx, point.x, point.y);
             });
 
             ratingChartMeta = {
@@ -652,7 +756,7 @@
             for (const point of ratingChartMeta.points) {
                 const dx = canvasX - point.x;
                 const dy = canvasY - point.y;
-                if (Math.sqrt(dx * dx + dy * dy) <= 6) {
+                if (Math.sqrt(dx * dx + dy * dy) <= 8) {
                     hit = point;
                     break;
                 }

@@ -6,14 +6,31 @@
     <title>EUIC Recorder Bridge Settings</title>
     <style>
         body {
-            font-family: "Segoe UI", Arial, sans-serif;
-            margin: 20px;
+            font-family: "Nunito", "Trebuchet MS", sans-serif;
+            margin: 0;
             width: 420px;
-            color: #1a1f2b;
+            color: #fff8e1;
+            background:
+                radial-gradient(200px 120px at 100% 0, rgba(255, 208, 70, 0.28), transparent 65%),
+                linear-gradient(180deg, #173d86 0%, #122f6e 42%, #10265a 100%);
+        }
+        .wrap {
+            margin: 16px;
+            padding: 14px;
+            border: 1px solid #2b5399;
+            border-radius: 12px;
+            background: rgba(17, 38, 88, 0.74);
+            box-shadow: 0 14px 28px rgba(7, 12, 34, 0.34);
         }
         h1 {
             margin: 0 0 12px;
             font-size: 18px;
+            font-weight: 800;
+            color: #ffe062;
+            text-shadow: 2px 2px 0 #1b2f69;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         .field {
             margin-bottom: 14px;
@@ -22,15 +39,18 @@
             display: block;
             font-size: 13px;
             margin-bottom: 6px;
-            font-weight: 600;
+            font-weight: 700;
+            color: #fff2b7;
         }
         input[type="text"] {
             width: 100%;
             box-sizing: border-box;
-            border: 1px solid #bec4d2;
-            border-radius: 8px;
+            border: 1px solid #315ca3;
+            border-radius: 10px;
             padding: 8px 10px;
             font-size: 13px;
+            color: #fff8e1;
+            background: #17356f;
         }
         .row {
             display: flex;
@@ -38,28 +58,64 @@
             gap: 8px;
         }
         button {
-            border: 0;
-            border-radius: 8px;
+            border: 2px solid #124f9d;
+            border-radius: 10px;
             padding: 9px 12px;
-            background: #2d5cff;
-            color: #fff;
-            font-weight: 600;
+            background: linear-gradient(180deg, #ffd850 0%, #ffbf1a 100%);
+            color: #163673;
+            font-weight: 800;
             cursor: pointer;
+            transition: transform 0.16s ease, filter 0.16s ease;
+        }
+        button:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.05);
         }
         #status {
             margin-top: 10px;
             font-size: 12px;
-            color: #2a5b13;
+            color: #d5ffe3;
+            font-weight: 700;
         }
         .hint {
             font-size: 12px;
-            color: #5b6374;
+            color: #dce7ff;
             margin-top: 4px;
+        }
+        input[type="checkbox"] {
+            accent-color: #ffcb05;
+        }
+        input:focus {
+            outline: none;
+            border-color: #ffcb05;
+            box-shadow: 0 0 0 3px rgba(255, 203, 5, 0.2);
+        }
+        .poke-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: inline-block;
+            background: linear-gradient(180deg, #ef4c44 0 47%, #fff5d9 47% 56%, #ffffff 56% 100%);
+            border: 1px solid #143674;
+            position: relative;
+        }
+        .poke-dot::after {
+            content: "";
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #fff0bf;
+            border: 1px solid #143674;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
         }
     </style>
 </head>
 <body>
-    <h1>EUIC Recorder Bridge</h1>
+    <div class="wrap">
+    <h1><span class="poke-dot" aria-hidden="true"></span>EUIC Recorder Bridge</h1>
 
     <div class="field">
         <label for="apiUrl">Recorder API endpoint</label>
@@ -74,6 +130,7 @@
 
     <button id="save" type="button">Opslaan</button>
     <div id="status"></div>
+    </div>
 
     <script src="options.js"></script>
 </body>
