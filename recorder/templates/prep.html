@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Matchup prep | Showdown Recorder</title>
+    <title>Pokemon tracker | Showdown Recorder</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body data-active-team-id="{{ active_team.id }}">
     <header class="app-header">
         <div>
-            <h1 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>Matchup prep</h1>
-            <p>Werk je matchup ideëen uit in grote blokken.</p>
+            <h1 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>Pokemon tracker</h1>
+            <p>Bekijk per tegenstander-Pokemon moves, items, teammates en lead-gedrag.</p>
         </div>
         <div class="actions">
             <a class="button button-with-icon" href="{{ url_for('index', team_id=active_team.id) }}"><span class="poke-icon poke-icon-bolt" aria-hidden="true"></span>Back</a>
@@ -19,586 +19,250 @@
 
     <main class="container">
         <section class="card">
-            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Matchups · {{ active_team.name }}</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Overzicht · {{ active_team.name }}</h2>
             <div class="prep-toolbar">
-                <input type="text" id="prep-search" placeholder="Zoek matchup...">
-                <form class="prep-create" id="prep-create-form">
-                    <input type="text" name="title" placeholder="Nieuw matchup (bv. Hard Trickroom)" required>
-                    <button type="submit">Toevoegen</button>
-                </form>
+                <input type="text" id="pokemon-search" placeholder="Zoek Pokemon...">
+                <p class="muted" id="pokemon-summary">
+                    {{ insights["summary"]["matches_with_team_data"] }}/{{ insights["summary"]["matches"] }} matches met teamsheet data · {{ insights["summary"]["unique_pokemon"] }} unieke Pokemon · {{ insights["summary"]["unique_team_patterns"] }} teampatronen
+                </p>
             </div>
         </section>
 
-        <section class="prep-grid" id="prep-grid">
-            {% for matchup in matchups %}
-                <button class="prep-tile" type="button" data-matchup-id="{{ matchup.id }}">
-                    <span class="prep-title">{{ matchup.title }}</span>
-                    <span class="muted prep-updated" data-updated="{{ matchup.updated_at }}">Laatst bijgewerkt {{ matchup.updated_at }}</span>
-                </button>
+        <section class="card">
+            <h3 class="title-with-icon"><span class="poke-icon poke-icon-bolt" aria-hidden="true"></span>Meest voorkomende tegenstander-teams</h3>
+            <div class="prep-insights-teams">
+                {% for team in insights["observed_teams"][:8] %}
+                    <div class="prep-insight-team">
+                        <span>{{ team["pokemon"]|join(', ') }}</span>
+                        <strong>{{ team["count"] }}x</strong>
+                    </div>
+                {% else %}
+                    <span class="muted">Nog geen teamcombinaties gevonden.</span>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="prep-insights-grid" id="pokemon-grid">
+            {% for mon in insights["pokemon"] %}
+                <article
+                    class="prep-insight-card pokemon-card"
+                    data-name="{{ mon["name"]|lower }}"
+                    data-mon='{{ mon|tojson|safe }}'
+                    data-team-matches='{{ insights["summary"]["matches_with_team_data"] }}'
+                >
+                    <header>
+                        <h4>{{ mon["name"] }}</h4>
+                        <span class="muted">Gezien {{ mon["seen"] }}x · gebracht {{ mon["brought"] }}x · lead {{ mon["lead"] }}x</span>
+                    </header>
+                    <div>
+                        <span class="insight-label">Items</span>
+                        <div class="insight-tags">
+                            {% for item in mon["items"][:8] %}
+                                <span class="insight-tag">{{ item["name"] }} <strong>{{ item["count"] }}x</strong></span>
+                            {% else %}
+                                <span class="muted">Geen items gezien</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div>
+                        <span class="insight-label">Moves</span>
+                        <div class="insight-tags">
+                            {% for move in mon["moves"][:8] %}
+                                <span class="insight-tag">{{ move["name"] }} <strong>{{ move["count"] }}x</strong></span>
+                            {% else %}
+                                <span class="muted">Geen moves gezien</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div>
+                        <span class="insight-label">Teammates</span>
+                        <div class="insight-tags">
+                            {% for mate in mon["teammates"][:10] %}
+                                <span class="insight-tag">{{ mate["name"] }} <strong>{{ mate["count"] }}x</strong></span>
+                            {% else %}
+                                <span class="muted">Geen teammates gezien</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </article>
             {% else %}
                 <div class="card">
-                    <p class="muted">Nog geen matchups. Voeg er eentje toe.</p>
+                    <p class="muted">Nog geen tegenstander-Pokemon gevonden. Zorg dat je logs/replays van gespeelde matches hebt en dat je eigen side herkend kan worden.</p>
                 </div>
             {% endfor %}
         </section>
     </main>
 
-    <div class="modal" id="prep-modal" aria-hidden="true">
+    <div class="modal" id="mon-modal" aria-hidden="true">
         <div class="modal-content">
             <header class="modal-header">
-                <input type="text" id="prep-modal-title" placeholder="Matchup titel">
-                <button type="button" class="button" id="prep-modal-close">Sluiten</button>
+                <h3 id="mon-modal-title">Pokemon details</h3>
+                <button type="button" class="button" id="mon-modal-close">Sluiten</button>
             </header>
-            <div class="modal-body" id="prep-modal-body">
-                <div class="prep-fields-grid" id="prep-text-fields">
-                    {% for section in sections if section != 'Flowchart' %}
-                        <div class="prep-field">
-                            <label>{{ section }}</label>
-                            <textarea data-section="{{ section }}" rows="4" placeholder="Schrijf je ideeën..."></textarea>
-                        </div>
-                    {% endfor %}
+            <div class="modal-body">
+                <div class="insight-tags" id="mon-modal-stats"></div>
+                <div class="prep-insight-card">
+                    <span class="insight-label">Lead flowchart</span>
+                    <div class="mini-flow" id="mon-modal-flow-lead"></div>
                 </div>
-                <div class="flowchart-card" id="flowchart-card">
-                    <div class="flowchart-header">
-                        <div>
-                            <h3 class="title-with-icon"><span class="poke-icon poke-icon-bolt" aria-hidden="true"></span>Flowchart</h3>
-                            <p class="muted">Bouw je gameplan visueel en voeg if/else-logica toe.</p>
-                        </div>
-                        <div class="flowchart-actions">
-                            <button type="button" id="flowchart-add-node">Node toevoegen</button>
-                            <button type="button" class="button-outline" id="flowchart-open-editor">Open flowchart</button>
-                        </div>
-                    </div>
-                    <div class="flowchart-content flowchart-content--single">
-                        <div class="flowchart-canvas">
-                            <div id="flowchart-card-mermaid" class="flowchart-preview-canvas" aria-live="polite"></div>
-                        </div>
-                    </div>
-                    <details class="flowchart-logic">
-                        <summary>Tekst / IFs</summary>
-                        <textarea id="flowchart-text" rows="6" placeholder="Schrijf hier je if/else-voorwaarden of uitleg..."></textarea>
-                    </details>
+                <div class="prep-insight-card">
+                    <span class="insight-label">Non-lead flowchart</span>
+                    <div class="mini-flow" id="mon-modal-flow-nonlead"></div>
                 </div>
-            </div>
-            <div class="modal-actions">
-                <button type="button" id="prep-modal-save">Opslaan</button>
+                <div class="prep-insight-card">
+                    <span class="insight-label">Top moves</span>
+                    <div class="insight-tags" id="mon-modal-moves"></div>
+                </div>
+                <div class="prep-insight-card">
+                    <span class="insight-label">Top turn 1 moves</span>
+                    <div class="insight-tags" id="mon-modal-turn1"></div>
+                </div>
+                <div class="prep-insight-card">
+                    <span class="insight-label">Top teammates</span>
+                    <div class="insight-tags" id="mon-modal-teammates"></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="modal" id="flowchart-modal" aria-hidden="true">
-        <div class="modal-content modal-content--wide">
-            <header class="modal-header">
-                <div class="modal-header-title">
-                    <h3 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Flowchart editor</h3>
-                    <p class="muted">Bewerk je flowchart in Mermaid of Draw.io.</p>
-                </div>
-                <div class="modal-header-actions">
-                    <button type="button" class="button-outline" id="flowchart-modal-close">Sluiten</button>
-                </div>
-            </header>
-            <div class="modal-body flowchart-modal-body">
-                <div class="flowchart-tabs" role="tablist" aria-label="Flowchart tabs">
-                    <button type="button" class="flowchart-tab active" data-tab="mermaid" role="tab" aria-selected="true">Mermaid</button>
-                    <button type="button" class="flowchart-tab" data-tab="drawio" role="tab" aria-selected="false">Draw.io</button>
-                </div>
-                <div class="flowchart-tab-panel" data-panel="mermaid" role="tabpanel">
-                    <div class="flowchart-mermaid">
-                        <label for="flowchart-mermaid-text">Mermaid syntax</label>
-                        <textarea id="flowchart-mermaid-text" rows="10" placeholder="flowchart TD\n  A[Start] --> B{Beslissing}\n  B -->|Ja| C[Actie]\n  B -->|Nee| D[Einde]"></textarea>
-                        <div class="flowchart-preview">
-                            <div id="flowchart-mermaid-preview" class="flowchart-preview-canvas" aria-live="polite"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="flowchart-tab-panel" data-panel="drawio" role="tabpanel" hidden>
-                    <div class="flowchart-drawio">
-                        <div class="flowchart-drawio-toolbar">
-                            <button type="button" class="button-outline" id="flowchart-drawio-save">Opslaan in app</button>
-                            <span class="muted" id="flowchart-drawio-status">Gebruik de Draw.io editor en klik daarna op Opslaan in app.</span>
-                        </div>
-                        <div class="flowchart-drawio-frame">
-                            <iframe id="flowchart-drawio-iframe" title="Draw.io editor" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"></iframe>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button type="button" id="flowchart-modal-apply">Opslaan</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <script>
-        const prepGrid = document.getElementById('prep-grid');
-        const prepCreateForm = document.getElementById('prep-create-form');
-        const prepSearch = document.getElementById('prep-search');
-        const activeTeamId = Number(document.body?.dataset?.activeTeamId || '');
-        const prepModal = document.getElementById('prep-modal');
-        const prepModalTitle = document.getElementById('prep-modal-title');
-        const prepModalClose = document.getElementById('prep-modal-close');
-        const prepModalSave = document.getElementById('prep-modal-save');
-        const prepModalBody = document.getElementById('prep-modal-body');
-        const flowchartNodes = document.getElementById('flowchart-nodes');
-        const flowchartEdges = document.getElementById('flowchart-edges');
-        const flowchartSvg = document.getElementById('flowchart-svg');
-        const flowchartAddNode = document.getElementById('flowchart-add-node');
-        const flowchartAddEdge = document.getElementById('flowchart-add-edge');
-        const flowchartText = document.getElementById('flowchart-text');
-        const flowchartCardMermaid = document.getElementById('flowchart-card-mermaid');
-        const flowchartOpenEditor = document.getElementById('flowchart-open-editor');
-        const flowchartModal = document.getElementById('flowchart-modal');
-        const flowchartModalClose = document.getElementById('flowchart-modal-close');
-        const flowchartModalApply = document.getElementById('flowchart-modal-apply');
-        const flowchartTabs = document.querySelectorAll('.flowchart-tab');
-        const flowchartTabPanels = document.querySelectorAll('.flowchart-tab-panel');
-        const flowchartMermaidText = document.getElementById('flowchart-mermaid-text');
-        const flowchartMermaidPreview = document.getElementById('flowchart-mermaid-preview');
-        const flowchartDrawioFrame = document.getElementById('flowchart-drawio-iframe');
-        const flowchartDrawioSave = document.getElementById('flowchart-drawio-save');
-        const flowchartDrawioStatus = document.getElementById('flowchart-drawio-status');
-        let activeMatchupId = null;
-        let flowchartData = { nodes: [], edges: [], text: '', mermaid: '', drawio: '' };
-        let drawioReady = false;
-        let pendingDrawioSave = false;
-        let mermaidRenderId = 0;
+        const pokemonSearch = document.getElementById('pokemon-search');
+        const pokemonGrid = document.getElementById('pokemon-grid');
+        const monModal = document.getElementById('mon-modal');
+        const monModalTitle = document.getElementById('mon-modal-title');
+        const monModalStats = document.getElementById('mon-modal-stats');
+        const monModalFlowLead = document.getElementById('mon-modal-flow-lead');
+        const monModalFlowNonLead = document.getElementById('mon-modal-flow-nonlead');
+        const monModalMoves = document.getElementById('mon-modal-moves');
+        const monModalTurn1 = document.getElementById('mon-modal-turn1');
+        const monModalTeammates = document.getElementById('mon-modal-teammates');
+        const monModalClose = document.getElementById('mon-modal-close');
+        const MIN_PATH_COUNT = 3;
 
-        if (window.mermaid) {
-            window.mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });
-        }
-
-        const formatLocalDateTime = (value) => {
-            if (!value) return value;
-            const date = new Date(value);
-            if (Number.isNaN(date.getTime())) return value;
-            return date.toLocaleString('nl-NL', {
-                timeZone: 'Europe/Amsterdam',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
+        const filterPokemonCards = () => {
+            if (!pokemonSearch || !pokemonGrid) return;
+            const query = pokemonSearch.value.trim().toLowerCase();
+            pokemonGrid.querySelectorAll('.pokemon-card').forEach((card) => {
+                const name = card.getAttribute('data-name') || '';
+                card.style.display = !query || name.includes(query) ? '' : 'none';
             });
         };
 
-        document.querySelectorAll('.prep-updated').forEach((element) => {
-            const raw = element.getAttribute('data-updated');
-            const formatted = formatLocalDateTime(raw);
-            if (formatted) {
-                element.textContent = `Laatst bijgewerkt ${formatted}`;
-            }
-        });
-
-        const openModal = () => {
-            if (!prepModal) return;
-            prepModal.classList.add('open');
-            prepModal.setAttribute('aria-hidden', 'false');
-        };
-
-        const closeModal = () => {
-            if (!prepModal) return;
-            prepModal.classList.remove('open');
-            prepModal.setAttribute('aria-hidden', 'true');
-        };
-
-        const newId = () => `node-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-
-        const normalizeFlowchart = (raw) => {
-            if (!raw) return { nodes: [], edges: [], text: '', mermaid: '', drawio: '' };
-            try {
-                const parsed = JSON.parse(raw);
-                const nodes = Array.isArray(parsed?.nodes) ? parsed.nodes : [];
-                const edges = Array.isArray(parsed?.edges) ? parsed.edges : [];
-                const text = typeof parsed?.text === 'string' ? parsed.text : '';
-                const mermaid = typeof parsed?.mermaid === 'string' ? parsed.mermaid : '';
-                const drawio = typeof parsed?.drawio === 'string' ? parsed.drawio : '';
-                return {
-                    nodes: nodes.map((node, index) => ({
-                        id: typeof node?.id === 'string' ? node.id : `${newId()}-${index}`,
-                        type: node?.type === 'decision' ? 'decision' : 'action',
-                        label: String(node?.label || `Stap ${index + 1}`)
-                    })),
-                    edges: edges.map((edge, index) => ({
-                        id: typeof edge?.id === 'string' ? edge.id : `edge-${Date.now()}-${index}`,
-                        from: String(edge?.from || ''),
-                        to: String(edge?.to || ''),
-                        label: String(edge?.label || '')
-                    })),
-                    text,
-                    mermaid,
-                    drawio
-                };
-            } catch (error) {
-                return { nodes: [], edges: [], text: '', mermaid: '', drawio: '' };
-            }
-        };
-
-        const renderFlowchart = () => {
-            renderFlowchartNodes();
-            renderFlowchartEdges();
-            renderFlowchartDiagram();
-        };
-
-        const renderMermaidInto = async (target, code) => {
-            if (!target || !window.mermaid) return;
-            const trimmed = code?.trim() || '';
-            target.innerHTML = '';
-            if (!trimmed) {
-                target.textContent = 'Voer Mermaid syntax in om een preview te zien.';
+        const renderTags = (container, rows, emptyText) => {
+            if (!container) return;
+            if (!Array.isArray(rows) || rows.length === 0) {
+                container.innerHTML = `<span class="muted">${emptyText}</span>`;
                 return;
             }
-            mermaidRenderId += 1;
-            const currentId = mermaidRenderId;
-            try {
-                const { svg } = await window.mermaid.render(`mermaid-${Date.now()}-${currentId}`, trimmed);
-                if (currentId !== mermaidRenderId) return;
-                target.innerHTML = svg;
-            } catch (error) {
-                target.textContent = 'Kon Mermaid niet renderen. Controleer je syntax.';
+            container.innerHTML = rows.slice(0, 10)
+                .map((row) => `<span class="insight-tag">${row.name} <strong>${row.count}x</strong></span>`)
+                .join('');
+        };
+
+        const renderPathFlow = (container, monName, headerText, movePaths, summaryText) => {
+            if (!container) return;
+            const filteredPaths = Array.isArray(movePaths)
+                ? movePaths.filter((entry) => Number(entry?.count || 0) >= MIN_PATH_COUNT)
+                : [];
+            if (filteredPaths.length === 0) {
+                container.innerHTML = `
+                    <div class="mini-flow-step">Start: zie ${monName}</div>
+                    <div class="mini-flow-arrow">↓</div>
+                    <div class="mini-flow-step">${headerText}: nog geen pad met minstens ${MIN_PATH_COUNT} waarnemingen.</div>
+                `;
+                return;
             }
+            const pathHtml = filteredPaths.slice(0, 4).map((entry, index) => {
+                const rawPath = String(entry?.path || '');
+                const steps = rawPath.split(' -> ').map((step) => step.trim()).filter(Boolean);
+                const stepsHtml = steps
+                    .map((step) => `<span class="mini-flow-step-pill">${step}</span>`)
+                    .join('<span class="mini-flow-arrow-inline">-></span>');
+                const count = Number(entry?.count || 0);
+                return `
+                    <div class="mini-flow-branch">
+                        <strong>Pad ${index + 1} (${count}x)</strong>
+                        <span>${stepsHtml || 'Geen stappen'}</span>
+                    </div>
+                `;
+            }).join('');
+            container.innerHTML = `
+                <div class="mini-flow-step">Start: zie ${monName}</div>
+                <div class="mini-flow-arrow">↓</div>
+                <div class="mini-flow-step">${headerText} · ${summaryText} · filter n >= ${MIN_PATH_COUNT}</div>
+                <div class="mini-flow-split">${pathHtml}</div>
+            `;
         };
 
-        const renderMermaidPreview = async () => {
-            const code = flowchartMermaidText?.value?.trim() || '';
-            await renderMermaidInto(flowchartMermaidPreview, code);
-            await renderMermaidInto(flowchartCardMermaid, code);
+        const openMonModal = (mon, matchesWithData) => {
+            if (!monModal || !monModalTitle) return;
+            const seen = Number(mon?.seen || 0);
+            const brought = Number(mon?.brought || 0);
+            const lead = Number(mon?.lead || 0);
+            const matches = Number(matchesWithData || 0);
+            const leadRate = brought > 0 ? Math.round((lead / brought) * 100) : 0;
+            const broughtRate = matches > 0 ? Math.round((brought / matches) * 100) : 0;
+
+            monModalTitle.textContent = `${mon?.name || 'Pokemon'} · extra stats`;
+            monModalStats.innerHTML = `
+                <span class="insight-tag">Gezien <strong>${seen}x</strong></span>
+                <span class="insight-tag">Gebracht <strong>${brought}x (${broughtRate}%)</strong></span>
+                <span class="insight-tag">Lead <strong>${lead}x (${leadRate}%)</strong></span>
+            `;
+
+            const leadPaths = Array.isArray(mon?.lead_move_paths) ? mon.lead_move_paths : [];
+            const nonLeadPaths = Array.isArray(mon?.nonlead_move_paths) ? mon.nonlead_move_paths : [];
+            renderPathFlow(
+                monModalFlowLead,
+                mon?.name || 'deze Pokemon',
+                'Lead situaties',
+                leadPaths,
+                `lead rate ${leadRate}%`
+            );
+            renderPathFlow(
+                monModalFlowNonLead,
+                mon?.name || 'deze Pokemon',
+                'Non-lead situaties',
+                nonLeadPaths,
+                `gebracht rate ${broughtRate}%`
+            );
+
+            renderTags(monModalMoves, mon?.moves, 'Geen moves gezien');
+            renderTags(monModalTurn1, mon?.turn1_moves, 'Geen turn 1 moves gezien');
+            renderTags(monModalTeammates, mon?.teammates, 'Geen teammates gezien');
+
+            monModal.classList.add('open');
+            monModal.setAttribute('aria-hidden', 'false');
         };
 
-        const renderFlowchartNodes = () => {
-            if (!flowchartNodes) return;
-            flowchartNodes.innerHTML = '';
-            flowchartData.nodes.forEach((node, index) => {
-                const row = document.createElement('div');
-                row.className = 'flowchart-row';
+        pokemonSearch?.addEventListener('input', filterPokemonCards);
 
-                const labelInput = document.createElement('input');
-                labelInput.type = 'text';
-                labelInput.value = node.label;
-                labelInput.placeholder = 'Label';
-                labelInput.addEventListener('input', () => {
-                    node.label = labelInput.value;
-                    renderFlowchartDiagram();
-                });
-
-                const typeSelect = document.createElement('select');
-                const optionAction = new Option('Actie', 'action', node.type === 'action', node.type === 'action');
-                const optionDecision = new Option('Beslissing', 'decision', node.type === 'decision', node.type === 'decision');
-                typeSelect.append(optionAction, optionDecision);
-                typeSelect.addEventListener('change', () => {
-                    node.type = typeSelect.value === 'decision' ? 'decision' : 'action';
-                    renderFlowchartDiagram();
-                });
-
-                const upButton = document.createElement('button');
-                upButton.type = 'button';
-                upButton.textContent = '↑';
-                upButton.disabled = index === 0;
-                upButton.addEventListener('click', () => {
-                    if (index === 0) return;
-                    const [moved] = flowchartData.nodes.splice(index, 1);
-                    flowchartData.nodes.splice(index - 1, 0, moved);
-                    renderFlowchart();
-                });
-
-                const downButton = document.createElement('button');
-                downButton.type = 'button';
-                downButton.textContent = '↓';
-                downButton.disabled = index === flowchartData.nodes.length - 1;
-                downButton.addEventListener('click', () => {
-                    if (index >= flowchartData.nodes.length - 1) return;
-                    const [moved] = flowchartData.nodes.splice(index, 1);
-                    flowchartData.nodes.splice(index + 1, 0, moved);
-                    renderFlowchart();
-                });
-
-                const deleteButton = document.createElement('button');
-                deleteButton.type = 'button';
-                deleteButton.textContent = 'Verwijderen';
-                deleteButton.addEventListener('click', () => {
-                    flowchartData.nodes = flowchartData.nodes.filter((item) => item.id !== node.id);
-                    flowchartData.edges = flowchartData.edges.filter((edge) => edge.from !== node.id && edge.to !== node.id);
-                    renderFlowchart();
-                });
-
-                row.append(labelInput, typeSelect, upButton, downButton, deleteButton);
-                flowchartNodes.appendChild(row);
-            });
-        };
-
-        const renderFlowchartEdges = () => {
-            if (!flowchartEdges) return;
-            flowchartEdges.innerHTML = '';
-            flowchartData.edges.forEach((edge) => {
-                const row = document.createElement('div');
-                row.className = 'flowchart-row';
-
-                const fromSelect = document.createElement('select');
-                const toSelect = document.createElement('select');
-                const labelInput = document.createElement('input');
-                labelInput.type = 'text';
-                labelInput.placeholder = 'Label (bv. ja/nee)';
-                labelInput.value = edge.label;
-                labelInput.addEventListener('input', () => {
-                    edge.label = labelInput.value;
-                    renderFlowchartDiagram();
-                });
-
-                const buildOptions = (select, value) => {
-                    select.innerHTML = '';
-                    const placeholder = new Option('Kies node', '', !value, !value);
-                    select.append(placeholder);
-                    flowchartData.nodes.forEach((node) => {
-                        const option = new Option(node.label || node.id, node.id, node.id === value, node.id === value);
-                        select.append(option);
-                    });
-                };
-
-                buildOptions(fromSelect, edge.from);
-                buildOptions(toSelect, edge.to);
-
-                fromSelect.addEventListener('change', () => {
-                    edge.from = fromSelect.value;
-                    renderFlowchartDiagram();
-                });
-                toSelect.addEventListener('change', () => {
-                    edge.to = toSelect.value;
-                    renderFlowchartDiagram();
-                });
-
-                const deleteButton = document.createElement('button');
-                deleteButton.type = 'button';
-                deleteButton.textContent = 'Verwijderen';
-                deleteButton.addEventListener('click', () => {
-                    flowchartData.edges = flowchartData.edges.filter((item) => item.id !== edge.id);
-                    renderFlowchart();
-                });
-
-                row.append(fromSelect, toSelect, labelInput, deleteButton);
-                flowchartEdges.appendChild(row);
-            });
-        };
-
-        const createSvgElement = (name) => document.createElementNS('http://www.w3.org/2000/svg', name);
-
-        const renderFlowchartDiagram = () => {
-            if (flowchartMermaidText && flowchartMermaidText.value !== flowchartData.mermaid) {
-                flowchartMermaidText.value = flowchartData.mermaid || '';
-            }
-            renderMermaidPreview();
-        };
-
-        const loadMatchup = async (matchupId) => {
-            const response = await fetch(`/api/prep_matchups/${matchupId}`);
-            const payload = await response.json();
-            if (!response.ok || !payload.ok) return;
-            activeMatchupId = matchupId;
-            prepModalTitle.value = payload.matchup.title || '';
-            prepModalBody.querySelectorAll('textarea[data-section]').forEach((textarea) => {
-                const section = textarea.dataset.section;
-                textarea.value = payload.notes?.[section] || '';
-            });
-            flowchartData = normalizeFlowchart(payload.notes?.Flowchart);
-            if (flowchartText) {
-                flowchartText.value = flowchartData.text || '';
-            }
-            if (flowchartMermaidText) {
-                flowchartMermaidText.value = flowchartData.mermaid || '';
-                renderMermaidPreview();
-            }
-            renderFlowchart();
-            openModal();
-        };
-
-        prepGrid?.addEventListener('click', (event) => {
+        pokemonGrid?.addEventListener('click', (event) => {
             const target = event.target;
             if (!(target instanceof HTMLElement)) return;
-            const tile = target.closest('.prep-tile');
-            if (!tile) return;
-            const matchupId = tile.dataset.matchupId;
-            if (!matchupId) return;
-            loadMatchup(matchupId);
-        });
-
-        const filterTiles = () => {
-            if (!prepSearch || !prepGrid) return;
-            const query = prepSearch.value.trim().toLowerCase();
-            prepGrid.querySelectorAll('.prep-tile').forEach((tile) => {
-                const title = tile.querySelector('.prep-title')?.textContent?.toLowerCase() || '';
-                tile.style.display = !query || title.includes(query) ? '' : 'none';
-            });
-        };
-
-        prepSearch?.addEventListener('input', filterTiles);
-
-        prepCreateForm?.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const input = prepCreateForm.querySelector('input[name="title"]');
-            const title = input?.value?.trim();
-            if (!title) return;
-            const response = await fetch('/api/prep_matchups', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, team_id: activeTeamId })
-            });
-            const payload = await response.json();
-            if (!response.ok || !payload.ok) return;
-            input.value = '';
-            window.location.reload();
-        });
-
-
-        prepModalSave?.addEventListener('click', async () => {
-            if (!activeMatchupId) return;
-            const notes = {};
-            prepModalBody.querySelectorAll('textarea[data-section]').forEach((textarea) => {
-                notes[textarea.dataset.section] = textarea.value;
-            });
-            if (flowchartText) {
-                flowchartData.text = flowchartText.value;
-            }
-            notes.Flowchart = JSON.stringify(flowchartData);
-            const response = await fetch(`/api/prep_matchups/${activeMatchupId}` , {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title: prepModalTitle.value.trim(),
-                    notes
-                })
-            });
-            const payload = await response.json();
-            if (!response.ok || !payload.ok) return;
-            window.location.reload();
-        });
-
-        const openFlowchartModal = () => {
-            if (!flowchartModal) return;
-            flowchartModal.classList.add('open');
-            flowchartModal.setAttribute('aria-hidden', 'false');
-            setActiveTab('mermaid');
-            if (flowchartMermaidText) {
-                flowchartMermaidText.value = flowchartData.mermaid || '';
-                renderMermaidPreview();
-            }
-            if (flowchartDrawioFrame) {
-                if (!flowchartDrawioFrame.src) {
-                    flowchartDrawioFrame.src = 'https://embed.diagrams.net/?embed=1&ui=dark&spin=1&proto=json&configure=1';
-                }
-                if (drawioReady) {
-                    const xml = flowchartData.drawio || '';
-                    flowchartDrawioFrame.contentWindow?.postMessage(JSON.stringify({ action: 'load', xml }), '*');
-                }
-            }
-        };
-
-        const closeFlowchartModal = () => {
-            if (!flowchartModal) return;
-            flowchartModal.classList.remove('open');
-            flowchartModal.setAttribute('aria-hidden', 'true');
-        };
-
-        const setActiveTab = (tabName) => {
-            flowchartTabs.forEach((button) => {
-                const isActive = button.dataset.tab === tabName;
-                button.classList.toggle('active', isActive);
-                button.setAttribute('aria-selected', String(isActive));
-            });
-            flowchartTabPanels.forEach((panel) => {
-                panel.hidden = panel.dataset.panel !== tabName;
-            });
-        };
-
-        flowchartTabs.forEach((button) => {
-            button.addEventListener('click', () => {
-                setActiveTab(button.dataset.tab || 'mermaid');
-            });
-        });
-
-        flowchartMermaidText?.addEventListener('input', () => {
-            flowchartData.mermaid = flowchartMermaidText.value;
-            renderMermaidPreview();
-        });
-
-        flowchartOpenEditor?.addEventListener('click', openFlowchartModal);
-        flowchartModalClose?.addEventListener('click', closeFlowchartModal);
-        flowchartModal?.addEventListener('click', (event) => {
-            if (event.target === flowchartModal) {
-                closeFlowchartModal();
-            }
-        });
-
-        flowchartModalApply?.addEventListener('click', () => {
-            if (flowchartMermaidText) {
-                flowchartData.mermaid = flowchartMermaidText.value;
-            }
-            closeFlowchartModal();
-        });
-
-        flowchartDrawioSave?.addEventListener('click', () => {
-            if (!flowchartDrawioFrame?.contentWindow) return;
-            pendingDrawioSave = true;
-            flowchartDrawioStatus.textContent = 'Exporteren...';
-            flowchartDrawioFrame.contentWindow.postMessage(JSON.stringify({ action: 'export', format: 'xml', xml: true, spin: 'Exporteren' }), '*');
-        });
-
-        window.addEventListener('message', (event) => {
-            if (!event.data || typeof event.data !== 'string') return;
-            let data;
+            const card = target.closest('.pokemon-card');
+            if (!card) return;
+            const rawMon = card.getAttribute('data-mon');
+            if (!rawMon) return;
+            let mon;
             try {
-                data = JSON.parse(event.data);
+                mon = JSON.parse(rawMon);
             } catch (error) {
                 return;
             }
-            if (data.event === 'configure') {
-                flowchartDrawioFrame?.contentWindow?.postMessage(JSON.stringify({
-                    action: 'configure',
-                    config: {
-                        css: '.geSidebarContainer{background:#0b0f1c;} .geToolbarContainer{background:#0b0f1c;} .geMenubarContainer{background:#0b0f1c;} .geStatusContainer{background:#0b0f1c;}'
-                    }
-                }), '*');
-            }
-            if (data.event === 'ready' || data.event === 'init') {
-                drawioReady = true;
-                const xml = flowchartData.drawio || '';
-                if (flowchartDrawioFrame?.contentWindow) {
-                    flowchartDrawioFrame.contentWindow.postMessage(JSON.stringify({ action: 'load', xml }), '*');
-                }
-            }
-            if (data.event === 'export' && typeof data.data === 'string') {
-                flowchartData.drawio = data.data;
-                flowchartDrawioStatus.textContent = 'Opgeslagen in app.';
-                if (pendingDrawioSave) {
-                    pendingDrawioSave = false;
-                    closeFlowchartModal();
-                }
-            }
+            const matchesWithData = Number(card.getAttribute('data-team-matches') || 0);
+            openMonModal(mon, matchesWithData);
         });
 
-        flowchartAddNode?.addEventListener('click', () => {
-            flowchartData.nodes.push({
-                id: newId(),
-                type: 'action',
-                label: `Stap ${flowchartData.nodes.length + 1}`
-            });
-            renderFlowchart();
+        monModalClose?.addEventListener('click', () => {
+            monModal?.classList.remove('open');
+            monModal?.setAttribute('aria-hidden', 'true');
         });
 
-        flowchartAddEdge?.addEventListener('click', () => {
-            const from = flowchartData.nodes[0]?.id || '';
-            const to = flowchartData.nodes[1]?.id || '';
-            flowchartData.edges.push({
-                id: `edge-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-                from,
-                to,
-                label: ''
-            });
-            renderFlowchart();
-        });
-
-        prepModalClose?.addEventListener('click', closeModal);
-        prepModal?.addEventListener('click', (event) => {
-            if (event.target === prepModal) {
-                closeModal();
+        monModal?.addEventListener('click', (event) => {
+            if (event.target === monModal) {
+                monModal.classList.remove('open');
+                monModal.setAttribute('aria-hidden', 'true');
             }
         });
     </script>

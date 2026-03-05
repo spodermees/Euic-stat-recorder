@@ -6,6 +6,7 @@ import re
 import sqlite3
 import sys
 import urllib.request
+from collections import Counter, defaultdict
 from urllib.parse import urlparse
 from datetime import datetime
 from pathlib import Path
@@ -90,6 +91,7 @@ RAW_RATING_PATTERN = re.compile(
     r"^\|raw\|\s*(?P<user>.+?)'s rating:\s*(?P<before>\d+).*?<strong>(?P<after>\d+)</strong>",
     re.IGNORECASE,
 )
+SIDE_SLOT_PATTERN = re.compile(r"^(?P<side>p[12])[a-z]?$", re.IGNORECASE)
 
 
 def get_db() -> sqlite3.Connection:
@@ -639,6 +641,502 @@ def _parse_replay_hp(hp_text: str) -> float | None:
     return None
 
 
+def _extract_side_from_slot(raw_slot: str | None) -> str | None:
+    if not raw_slot:
+        return None
+    slot = raw_slot.strip()
+    if ":" in slot:
+        slot = slot.split(":", 1)[0].strip()
+    match = SIDE_SLOT_PATTERN.match(slot)
+    if match:
+        return match.group("side").lower()
+    lower = slot.lower()
+    if lower.startswith("p1"):
+        return "p1"
+    if lower.startswith("p2"):
+        return "p2"
+    return None
+
+
+def _extract_actor_nickname(actor: str | None) -> str:
+    if not actor:
+        return ""
+    if ":" in actor:
+        return actor.split(":", 1)[1].strip()
+    return actor.strip()
+
+
+def _clean_species_details(value: str | None) -> str:
+    if not value:
+        return ""
+    species = value.split(",", 1)[0].strip()
+    species = species.replace("(Terastallized)", "").strip()
+    species = clean_damage_target(species)
+    return species
+
+
+def _normalize_item_name(item: str | None) -> str:
+    if not item:
+        return ""
+    cleaned = item.strip()
+    cleaned = cleaned.replace("&nbsp;", " ")
+    cleaned = re.sub(r"\s+", " ", cleaned)
+    return cleaned
+
+
+def _parse_showteam_packed(packed: str) -> list[dict[str, str]]:
+    mons: list[dict[str, str]] = []
+    if not packed:
+        return mons
+    for raw_mon in packed.split("]"):
+        mon = raw_mon.strip()
+        if not mon:
+            continue
+        fields = mon.split("|")
+        nickname = fields[0].strip() if len(fields) > 0 else ""
+        species = fields[1].strip() if len(fields) > 1 else ""
+        item = fields[2].strip() if len(fields) > 2 else ""
+        resolved_species = species or nickname
+        if not resolved_species:
+            continue
+        mons.append({
+            "species": _clean_species_details(resolved_species),
+            "item": _normalize_item_name(item),
+        })
+    return mons
+
+
+def _collect_opponent_observations(log_rows: list[sqlite3.Row], opponent_side: str) -> dict:
+    team_species: set[str] = set()
+    items_by_species: dict[str, set[str]] = defaultdict(set)
+    nickname_to_species: dict[str, str] = {}
+    brought_species: set[str] = set()
+    lead_species: set[str] = set()
+    moves_by_species: dict[str, Counter[str]] = defaultdict(Counter)
+    turn1_moves_by_species: dict[str, Counter[str]] = defaultdict(Counter)
+    move_sequence_by_species: dict[str, list[str]] = defaultdict(list)
+    current_turn: int | None = None
+
+    for row in log_rows:
+        line = (row["raw_line"] or "").strip()
+        if not line or not line.startswith("|"):
+            continue
+        parts = line.split("|")
+        if len(parts) < 3:
+            continue
+        tag = parts[1]
+
+        if tag == "poke" and len(parts) > 3:
+            side = _extract_side_from_slot(parts[2])
+            if side == opponent_side:
+                species = _clean_species_details(parts[3])
+                if species:
+                    team_species.add(species)
+            continue
+
+        if tag == "turn" and len(parts) > 2:
+            try:
+                current_turn = int(parts[2])
+            except ValueError:
+                current_turn = None
+            continue
+
+        if tag == "showteam" and len(parts) > 3:
+            side = _extract_side_from_slot(parts[2])
+            if side == opponent_side:
+                for mon in _parse_showteam_packed(parts[3]):
+                    species = mon["species"]
+                    item = mon["item"]
+                    if species:
+                        team_species.add(species)
+                    if species and item:
+                        items_by_species[species].add(item)
+            continue
+
+        if tag in {"switch", "drag", "replace", "detailschange"} and len(parts) > 3:
+            actor = parts[2]
+            side = _extract_side_from_slot(actor)
+            if side == opponent_side:
+                nickname = _extract_actor_nickname(actor)
+                species = _clean_species_details(parts[3])
+                if nickname and species:
+                    nickname_to_species[nickname] = species
+                if species:
+                    team_species.add(species)
+                    brought_species.add(species)
+                    if current_turn is None or current_turn <= 1:
+                        lead_species.add(species)
+            continue
+
+        if tag == "move" and len(parts) > 3:
+            actor = parts[2]
+            side = _extract_side_from_slot(actor)
+            if side != opponent_side:
+                continue
+            nickname = _extract_actor_nickname(actor)
+            species = nickname_to_species.get(nickname) or _clean_species_details(nickname)
+            move_name = (parts[3] or "").strip()
+            if species:
+                team_species.add(species)
+                brought_species.add(species)
+                if move_name:
+                    moves_by_species[species][move_name] += 1
+                    move_sequence_by_species[species].append(move_name)
+                    if current_turn == 1:
+                        turn1_moves_by_species[species][move_name] += 1
+            continue
+
+        if tag in {"item", "-item", "-enditem"} and len(parts) > 3:
+            actor = parts[2]
+            side = _extract_side_from_slot(actor)
+            if side != opponent_side:
+                continue
+            nickname = _extract_actor_nickname(actor)
+            species = nickname_to_species.get(nickname) or _clean_species_details(nickname)
+            item = _normalize_item_name(parts[3])
+            if species:
+                team_species.add(species)
+            if species and item:
+                items_by_species[species].add(item)
+
+    return {
+        "team_species": sorted(team_species),
+        "items_by_species": {name: sorted(items) for name, items in items_by_species.items()},
+        "brought_species": sorted(brought_species),
+        "lead_species": sorted(lead_species),
+        "moves_by_species": {
+            name: dict(counter)
+            for name, counter in moves_by_species.items()
+        },
+        "turn1_moves_by_species": {
+            name: dict(counter)
+            for name, counter in turn1_moves_by_species.items()
+        },
+        "move_sequence_by_species": {
+            name: list(sequence)
+            for name, sequence in move_sequence_by_species.items()
+        },
+    }
+
+
+def _resolve_opponent_side(title_normalized: str, player1: str | None, player2: str | None) -> str | None:
+    p1 = normalize_name(player1 or "")
+    p2 = normalize_name(player2 or "")
+    if not title_normalized or (not p1 and not p2):
+        return None
+    if title_normalized == p1:
+        return "p1"
+    if title_normalized == p2:
+        return "p2"
+    if title_normalized and p1 and title_normalized in p1:
+        return "p1"
+    if title_normalized and p2 and title_normalized in p2:
+        return "p2"
+    return None
+
+
+def build_matchup_pokemon_insights(matchup_id: int) -> dict:
+    db = get_db()
+    matchup = db.execute(
+        "SELECT id, title, team_id FROM prep_matchups WHERE id = ?",
+        (matchup_id,),
+    ).fetchone()
+    if matchup is None:
+        return {
+            "ok": False,
+            "error": "not found",
+        }
+
+    title = (matchup["title"] or "").strip()
+    title_normalized = normalize_name(title)
+
+    match_rows = db.execute(
+        """
+        SELECT id, player1, player2
+        FROM matches
+        WHERE team_id = ?
+        ORDER BY id DESC
+        """,
+        (matchup["team_id"],),
+    ).fetchall()
+
+    selected_matches: list[dict] = []
+    for row in match_rows:
+        opponent_side = _resolve_opponent_side(title_normalized, row["player1"], row["player2"])
+        if opponent_side:
+            selected_matches.append({"id": row["id"], "opponent_side": opponent_side})
+
+    if not selected_matches:
+        return {
+            "ok": True,
+            "matchup": {"id": matchup["id"], "title": title},
+            "summary": {
+                "matches": 0,
+                "matches_with_team_data": 0,
+                "unique_pokemon": 0,
+                "unique_team_patterns": 0,
+            },
+            "observed_teams": [],
+            "pokemon": [],
+        }
+
+    team_patterns: Counter[str] = Counter()
+    pokemon_stats: dict[str, dict] = {}
+    matches_with_team_data = 0
+
+    for entry in selected_matches:
+        log_rows = db.execute(
+            "SELECT raw_line FROM log_lines WHERE match_id = ? ORDER BY id ASC",
+            (entry["id"],),
+        ).fetchall()
+        observations = _collect_opponent_observations(log_rows, entry["opponent_side"])
+        team_species = observations["team_species"]
+        items_by_species = observations["items_by_species"]
+
+        if not team_species:
+            continue
+
+        matches_with_team_data += 1
+        signature = " / ".join(team_species)
+        team_patterns[signature] += 1
+
+        for pokemon in team_species:
+            stat = pokemon_stats.setdefault(
+                pokemon,
+                {
+                    "seen": 0,
+                    "items": Counter(),
+                    "teammates": Counter(),
+                    "teams": Counter(),
+                },
+            )
+            stat["seen"] += 1
+            stat["teams"][signature] += 1
+            for teammate in team_species:
+                if teammate != pokemon:
+                    stat["teammates"][teammate] += 1
+            for item in items_by_species.get(pokemon, []):
+                if item:
+                    stat["items"][item] += 1
+
+    pokemon_payload: list[dict] = []
+    for name, stat in sorted(
+        pokemon_stats.items(),
+        key=lambda pair: (-pair[1]["seen"], pair[0].casefold()),
+    ):
+        pokemon_payload.append(
+            {
+                "name": name,
+                "seen": int(stat["seen"]),
+                "items": [
+                    {"name": item, "count": count}
+                    for item, count in stat["items"].most_common()
+                ],
+                "teammates": [
+                    {"name": teammate, "count": count}
+                    for teammate, count in stat["teammates"].most_common()
+                ],
+                "teams": [
+                    {"signature": signature, "count": count}
+                    for signature, count in stat["teams"].most_common()
+                ],
+            }
+        )
+
+    observed_teams = [
+        {
+            "signature": signature,
+            "count": count,
+            "pokemon": signature.split(" / ") if signature else [],
+        }
+        for signature, count in team_patterns.most_common()
+    ]
+
+    return {
+        "ok": True,
+        "matchup": {"id": matchup["id"], "title": title},
+        "summary": {
+            "matches": len(selected_matches),
+            "matches_with_team_data": matches_with_team_data,
+            "unique_pokemon": len(pokemon_payload),
+            "unique_team_patterns": len(observed_teams),
+        },
+        "observed_teams": observed_teams,
+        "pokemon": pokemon_payload,
+    }
+
+
+def _team_entry_aliases(team_id: int) -> list[str]:
+    aliases = set(MY_POKEMON_PRESET)
+    for entry in list_team_pokemon(team_id):
+        nickname = (entry.get("nickname") or "").strip()
+        species = (entry.get("species") or "").strip()
+        if nickname:
+            aliases.add(nickname)
+        if species:
+            aliases.add(species)
+    return [name for name in aliases if name]
+
+
+def build_team_pokemon_insights(team_id: int) -> dict:
+    db = get_db()
+    my_aliases = _team_entry_aliases(team_id)
+    rows = db.execute(
+        """
+        SELECT id, my_side
+        FROM matches
+        WHERE team_id = ?
+        ORDER BY id DESC
+        """,
+        (team_id,),
+    ).fetchall()
+
+    selected_matches: list[dict] = []
+    for row in rows:
+        my_side = (row["my_side"] or "").strip().lower()
+        if my_side not in {"p1", "p2"}:
+            my_side = infer_my_side(db, row["id"], my_aliases) or ""
+        if my_side not in {"p1", "p2"}:
+            continue
+        opponent_side = "p2" if my_side == "p1" else "p1"
+        selected_matches.append({"id": row["id"], "opponent_side": opponent_side})
+
+    team_patterns: Counter[str] = Counter()
+    pokemon_stats: dict[str, dict] = {}
+    matches_with_team_data = 0
+
+    for entry in selected_matches:
+        log_rows = db.execute(
+            "SELECT raw_line FROM log_lines WHERE match_id = ? ORDER BY id ASC",
+            (entry["id"],),
+        ).fetchall()
+        observations = _collect_opponent_observations(log_rows, entry["opponent_side"])
+        team_species = observations["team_species"]
+        items_by_species = observations["items_by_species"]
+        brought_species = set(observations.get("brought_species") or [])
+        lead_species = set(observations.get("lead_species") or [])
+        moves_by_species = observations.get("moves_by_species") or {}
+        turn1_moves_by_species = observations.get("turn1_moves_by_species") or {}
+        move_sequence_by_species = observations.get("move_sequence_by_species") or {}
+
+        if not team_species:
+            continue
+
+        matches_with_team_data += 1
+        signature = " / ".join(team_species)
+        team_patterns[signature] += 1
+
+        for pokemon in team_species:
+            stat = pokemon_stats.setdefault(
+                pokemon,
+                {
+                    "seen": 0,
+                    "brought": 0,
+                    "lead": 0,
+                    "items": Counter(),
+                    "teammates": Counter(),
+                    "teams": Counter(),
+                    "moves": Counter(),
+                    "turn1_moves": Counter(),
+                    "move_paths": Counter(),
+                    "lead_move_paths": Counter(),
+                    "nonlead_move_paths": Counter(),
+                },
+            )
+            stat["seen"] += 1
+            if pokemon in brought_species:
+                stat["brought"] += 1
+            if pokemon in lead_species:
+                stat["lead"] += 1
+            stat["teams"][signature] += 1
+            for teammate in team_species:
+                if teammate != pokemon:
+                    stat["teammates"][teammate] += 1
+            for item in items_by_species.get(pokemon, []):
+                if item:
+                    stat["items"][item] += 1
+            for move_name, count in dict(moves_by_species.get(pokemon) or {}).items():
+                if move_name and count:
+                    stat["moves"][move_name] += int(count)
+            for move_name, count in dict(turn1_moves_by_species.get(pokemon) or {}).items():
+                if move_name and count:
+                    stat["turn1_moves"][move_name] += int(count)
+            sequence = [str(move).strip() for move in list(move_sequence_by_species.get(pokemon) or []) if str(move).strip()]
+            if sequence:
+                path = " -> ".join(sequence[:4])
+                stat["move_paths"][path] += 1
+                if pokemon in lead_species:
+                    stat["lead_move_paths"][path] += 1
+                else:
+                    stat["nonlead_move_paths"][path] += 1
+
+    pokemon_payload: list[dict] = []
+    for name, stat in sorted(
+        pokemon_stats.items(),
+        key=lambda pair: (-pair[1]["seen"], pair[0].casefold()),
+    ):
+        pokemon_payload.append(
+            {
+                "name": name,
+                "seen": int(stat["seen"]),
+                "brought": int(stat["brought"]),
+                "lead": int(stat["lead"]),
+                "items": [
+                    {"name": item, "count": count}
+                    for item, count in stat["items"].most_common()
+                ],
+                "moves": [
+                    {"name": move_name, "count": count}
+                    for move_name, count in stat["moves"].most_common()
+                ],
+                "turn1_moves": [
+                    {"name": move_name, "count": count}
+                    for move_name, count in stat["turn1_moves"].most_common()
+                ],
+                "move_paths": [
+                    {"path": path, "count": count}
+                    for path, count in stat["move_paths"].most_common()
+                ],
+                "lead_move_paths": [
+                    {"path": path, "count": count}
+                    for path, count in stat["lead_move_paths"].most_common()
+                ],
+                "nonlead_move_paths": [
+                    {"path": path, "count": count}
+                    for path, count in stat["nonlead_move_paths"].most_common()
+                ],
+                "teammates": [
+                    {"name": teammate, "count": count}
+                    for teammate, count in stat["teammates"].most_common()
+                ],
+                "teams": [
+                    {"signature": signature, "count": count}
+                    for signature, count in stat["teams"].most_common()
+                ],
+            }
+        )
+
+    observed_teams = [
+        {
+            "signature": signature,
+            "count": count,
+            "pokemon": signature.split(" / ") if signature else [],
+        }
+        for signature, count in team_patterns.most_common()
+    ]
+
+    return {
+        "summary": {
+            "matches": len(selected_matches),
+            "matches_with_team_data": matches_with_team_data,
+            "unique_pokemon": len(pokemon_payload),
+            "unique_team_patterns": len(observed_teams),
+        },
+        "observed_teams": observed_teams,
+        "pokemon": pokemon_payload,
+    }
+
+
 def parse_replay_line(line: str) -> dict:
     parts = line.split("|")
     result: dict = {}
@@ -1124,11 +1622,10 @@ def prep():
     if active_team:
         mark_team_active(active_team_id)
         active_team = get_team_by_id(active_team_id)
-    matchups = list_prep_matchups_for_team(active_team_id)
+    insights = build_team_pokemon_insights(active_team_id)
     return render_template(
         "prep.html",
-        sections=PREP_SECTIONS,
-        matchups=matchups,
+        insights=insights,
         active_team=active_team,
     )
 
@@ -1222,6 +1719,14 @@ def api_get_prep_matchup(matchup_id: int):
         "matchup": dict(row),
         "notes": notes,
     }
+
+
+@app.route("/api/prep_matchups/<int:matchup_id>/insights", methods=["GET"])
+def api_get_prep_matchup_insights(matchup_id: int):
+    payload = build_matchup_pokemon_insights(matchup_id)
+    if not payload.get("ok"):
+        return payload, 404
+    return payload
 
 
 @app.route("/api/prep_matchups/<int:matchup_id>", methods=["POST"])
