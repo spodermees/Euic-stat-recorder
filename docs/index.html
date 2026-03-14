@@ -23,6 +23,18 @@
                 <span class="chip">Team: calyogre</span>
                 
                     <span class="chip">3 teams</span>
+                    
+                        <label class="sr-only" for="team-select-static">Selecteer team</label>
+                        <select id="team-select-static" aria-label="Selecteer team">
+                            
+                                <option value="index.html" selected>calyogre</option>
+                            
+                                <option value="teams/team-1.html" >Team 1</option>
+                            
+                                <option value="teams/team-2.html" >perish trap</option>
+                            
+                        </select>
+                    
                 
             </div>
         
@@ -185,6 +197,7 @@
         const ratingFormat = document.getElementById('rating-format');
         const ratingChartEmpty = document.getElementById('rating-chart-empty');
         const ratingChartRange = document.getElementById('rating-chart-range');
+        const teamSelectStatic = document.getElementById('team-select-static');
 
         const normalize = (value) => (value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
         const isFiniteNumber = (value) => Number.isFinite(value);
@@ -422,6 +435,13 @@
         };
 
         initRatingCard();
+
+        teamSelectStatic?.addEventListener('change', () => {
+            const target = teamSelectStatic.value;
+            if (target) {
+                window.location.href = target;
+            }
+        });
     </script>
 </body>
 </html>
