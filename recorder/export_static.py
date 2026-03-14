@@ -14,6 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "templates"
 OUTPUT_DIR = BASE_DIR.parent / "docs"
 OUTPUT_STATIC_DIR = OUTPUT_DIR / "static"
+OUTPUT_TEAMS_DIR = OUTPUT_DIR / "teams"
 
 RAW_RATING_PATTERN = re.compile(
     r"^\|raw\|\s*(?P<user>.+?)'s rating:\s*(?P<before>\d+).*?<strong>(?P<after>\d+)</strong>",
@@ -41,27 +42,14 @@ def _active_team(db: sqlite3.Connection) -> sqlite3.Row | None:
     )
 
 
-def export_site() -> None:
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    OUTPUT_STATIC_DIR.mkdir(parents=True, exist_ok=True)
-
-    db = sqlite3.connect(DB_PATH)
-    db.row_factory = sqlite3.Row
-
-    active_team = _active_team(db)
-    active_team_id = active_team["id"] if active_team else None
-
-    teams = fetch_rows(
-        db,
-        """
-        SELECT id, name, updated_at
-        FROM prep_teams
-        ORDER BY updated_at DESC, id DESC
-        """,
-    )
-
+def _build_export_context(
+    db: sqlite3.Connection,
+    team_id: int | None,
+    active_team: dict | None,
+    teams: list[dict],
+) -> dict:
     team_pokemon = []
-    if active_team_id is not None:
+    if team_id is not None:
         team_pokemon = fetch_rows(
             db,
             """
@@ -70,10 +58,10 @@ def export_site() -> None:
             WHERE team_id = ?
             ORDER BY id DESC
             """,
-            (active_team_id,),
+            (team_id,),
         )
 
-    if active_team_id is None:
+    if team_id is None:
         matches = fetch_rows(
             db,
             """
@@ -91,10 +79,10 @@ def export_site() -> None:
             WHERE team_id = ?
             ORDER BY id DESC
             """,
-            (active_team_id,),
+            (team_id,),
         )
 
-    if active_team_id is None:
+    if team_id is None:
         totals = fetch_rows(
             db,
             """
@@ -111,10 +99,10 @@ def export_site() -> None:
             INNER JOIN matches ON matches.id = events.match_id
             WHERE matches.team_id = ?
             """,
-            (active_team_id,),
+            (team_id,),
         )[0]
 
-    if active_team_id is None:
+    if team_id is None:
         damage_stats = fetch_rows(
             db,
             """
@@ -143,10 +131,10 @@ def export_site() -> None:
               AND events.value_low IS NOT NULL
               AND events.value_high IS NOT NULL
             """,
-            (active_team_id,),
+            (team_id,),
         )[0]
 
-    if active_team_id is None:
+    if team_id is None:
         damage_rows = fetch_rows(
             db,
             """
@@ -168,7 +156,7 @@ def export_site() -> None:
               AND events.value_low IS NOT NULL
               AND events.value_high IS NOT NULL
             """,
-            (active_team_id,),
+            (team_id,),
         )
 
     unique_names = sorted(
@@ -194,7 +182,7 @@ def export_site() -> None:
     )
     prep_notes = {row["section"]: row["content"] or "" for row in prep_notes_rows}
 
-    if active_team_id is None:
+    if team_id is None:
         prep_matchup_rows = fetch_rows(
             db,
             """
@@ -212,7 +200,7 @@ def export_site() -> None:
             WHERE team_id = ?
             ORDER BY updated_at DESC, id DESC
             """,
-            (active_team_id,),
+            (team_id,),
         )
     prep_matchups = []
     for matchup in prep_matchup_rows:
@@ -252,7 +240,7 @@ def export_site() -> None:
             )
 
     rating_history = []
-    if active_team_id is None:
+    if team_id is None:
         rating_rows = fetch_rows(
             db,
             """
@@ -274,7 +262,7 @@ def export_site() -> None:
             ORDER BY id ASC
             LIMIT 500
             """,
-            (active_team_id,),
+            (team_id,),
         )
     for row in rating_rows:
         rating_history.append(
@@ -287,7 +275,7 @@ def export_site() -> None:
         )
 
     if not rating_history:
-        if active_team_id is None:
+        if team_id is None:
             raw_rows = fetch_rows(
                 db,
                 """
@@ -311,7 +299,7 @@ def export_site() -> None:
                 ORDER BY log_lines.id ASC
                 LIMIT 800
                 """,
-                (active_team_id,),
+                (team_id,),
             )
         for row in raw_rows:
             rating_match = RAW_RATING_PATTERN.match(row["raw_line"] or "")
@@ -326,6 +314,46 @@ def export_site() -> None:
                 }
             )
 
+    return {
+        "matches": matches,
+        "totals": totals,
+        "damage_stats": damage_stats,
+        "attacker_options": attacker_options,
+        "opponent_options": opponent_options,
+        "damage_rows": [dict(row) for row in damage_rows],
+        "rating_history": rating_history,
+        "teams": teams,
+        "active_team": active_team,
+        "team_pokemon": [dict(row) for row in team_pokemon],
+        "match_logs": match_logs,
+        "prep_sections": PREP_SECTIONS,
+        "prep_notes": prep_notes,
+        "prep_matchups": prep_matchups,
+    }
+
+
+def export_site() -> None:
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    OUTPUT_STATIC_DIR.mkdir(parents=True, exist_ok=True)
+    OUTPUT_TEAMS_DIR.mkdir(parents=True, exist_ok=True)
+
+    db = sqlite3.connect(DB_PATH)
+    db.row_factory = sqlite3.Row
+
+    active_team_row = _active_team(db)
+    active_team = dict(active_team_row) if active_team_row else None
+    active_team_id = active_team["id"] if active_team else None
+
+    teams_rows = fetch_rows(
+        db,
+        """
+        SELECT id, name, updated_at
+        FROM prep_teams
+        ORDER BY updated_at DESC, id DESC
+        """,
+    )
+    teams = [dict(row) for row in teams_rows]
+
     env = Environment(
         loader=FileSystemLoader(TEMPLATES_DIR),
         autoescape=select_autoescape(["html", "xml"]),
@@ -334,28 +362,64 @@ def export_site() -> None:
 
     template = env.get_template("static_index.html")
 
-    def render_page(output_path: Path, static_prefix: str) -> None:
+    def render_page(output_path: Path, static_prefix: str, context: dict, team_nav_options: list[dict]) -> None:
         html = template.render(
-            matches=matches,
-            totals=totals,
-            damage_stats=damage_stats,
-            attacker_options=attacker_options,
-            opponent_options=opponent_options,
-            damage_rows=[dict(row) for row in damage_rows],
-            rating_history=rating_history,
-            teams=[dict(row) for row in teams],
-            active_team=dict(active_team) if active_team else None,
-            team_pokemon=[dict(row) for row in team_pokemon],
-            match_logs=match_logs,
-            prep_sections=PREP_SECTIONS,
-            prep_notes=prep_notes,
-            prep_matchups=prep_matchups,
+            **context,
+            team_nav_options=team_nav_options,
             static_prefix=static_prefix,
         )
         output_path.write_text(html, encoding="utf-8")
 
-    render_page(OUTPUT_DIR / "index.html", "static")
-    render_page(BASE_DIR.parent / "index_website.html", "docs/static")
+    selected_team_id = active_team_id
+    if selected_team_id is None and teams:
+        selected_team_id = int(teams[0]["id"])
+
+    selected_team = next((team for team in teams if int(team["id"]) == selected_team_id), None)
+    selected_context = _build_export_context(db, selected_team_id, selected_team, teams)
+
+    docs_nav_options = []
+    root_nav_options = []
+    for team in teams:
+        team_id = int(team["id"])
+        docs_nav_options.append(
+            {
+                "id": team_id,
+                "name": team["name"],
+                "url": "index.html" if team_id == selected_team_id else f"teams/team-{team_id}.html",
+                "selected": team_id == selected_team_id,
+            }
+        )
+        root_nav_options.append(
+            {
+                "id": team_id,
+                "name": team["name"],
+                "url": "index_website.html" if team_id == selected_team_id else f"docs/teams/team-{team_id}.html",
+                "selected": team_id == selected_team_id,
+            }
+        )
+
+    render_page(OUTPUT_DIR / "index.html", "static", selected_context, docs_nav_options)
+    render_page(BASE_DIR.parent / "index_website.html", "docs/static", selected_context, root_nav_options)
+
+    for team in teams:
+        team_id = int(team["id"])
+        team_context = _build_export_context(db, team_id, team, teams)
+        team_nav_options = [
+            {
+                "id": int(candidate["id"]),
+                "name": candidate["name"],
+                "url": "../index.html" if int(candidate["id"]) == selected_team_id else f"team-{int(candidate['id'])}.html",
+                "selected": int(candidate["id"]) == team_id,
+            }
+            for candidate in teams
+        ]
+        render_page(
+            OUTPUT_TEAMS_DIR / f"team-{team_id}.html",
+            "../static",
+            team_context,
+            team_nav_options,
+        )
+
     shutil.copytree(BASE_DIR / "static", OUTPUT_STATIC_DIR, dirs_exist_ok=True)
 
     db.close()

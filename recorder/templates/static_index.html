@@ -23,6 +23,14 @@
                 <span class="chip">Team: {{ active_team.name }}</span>
                 {% if teams|length > 1 %}
                     <span class="chip">{{ teams|length }} teams</span>
+                    {% if team_nav_options %}
+                        <label class="sr-only" for="team-select-static">Selecteer team</label>
+                        <select id="team-select-static" aria-label="Selecteer team">
+                            {% for option in team_nav_options %}
+                                <option value="{{ option.url }}" {% if option.selected %}selected{% endif %}>{{ option.name }}</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
                 {% endif %}
             </div>
         {% endif %}
@@ -230,6 +238,7 @@
         const ratingFormat = document.getElementById('rating-format');
         const ratingChartEmpty = document.getElementById('rating-chart-empty');
         const ratingChartRange = document.getElementById('rating-chart-range');
+        const teamSelectStatic = document.getElementById('team-select-static');
 
         const normalize = (value) => (value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
         const isFiniteNumber = (value) => Number.isFinite(value);
@@ -467,6 +476,13 @@
         };
 
         initRatingCard();
+
+        teamSelectStatic?.addEventListener('change', () => {
+            const target = teamSelectStatic.value;
+            if (target) {
+                window.location.href = target;
+            }
+        });
     </script>
 </body>
 </html>
