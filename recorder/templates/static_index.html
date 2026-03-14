@@ -12,15 +12,39 @@
     <meta name="apple-mobile-web-app-title" content="Showdown Recorder">
     <meta name="theme-color" content="#0f172a">
 </head>
-<body>
+<body{% if active_team %} data-active-team-id="{{ active_team.id }}"{% endif %}>
     <header class="app-header">
         <div>
             <h1 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>Showdown Recorder</h1>
             <p>Static snapshot for mobile viewing.</p>
         </div>
+        {% if active_team %}
+            <div class="actions">
+                <span class="chip">Team: {{ active_team.name }}</span>
+                {% if teams|length > 1 %}
+                    <span class="chip">{{ teams|length }} teams</span>
+                {% endif %}
+            </div>
+        {% endif %}
         <div class="stat">
             <span>Total events</span>
             <strong>{{ totals.total_events or 0 }}</strong>
+        </div>
+        <div class="rating-wrapper" id="rating-wrapper">
+            <div class="rating rating-clickable" id="rating-card" aria-live="polite" role="button" tabindex="0" aria-expanded="false">
+                <span>Current rating</span>
+                <strong id="rating-elo">...</strong>
+                <small id="rating-format" class="muted">Loading...</small>
+                <small class="muted">Klik voor graph</small>
+            </div>
+            <div class="rating-chart" id="rating-chart" role="dialog" aria-label="Rating history" hidden>
+                <div class="rating-chart-header">
+                    <span>Rating history</span>
+                    <span id="rating-chart-range" class="muted"></span>
+                </div>
+                <canvas id="rating-canvas" width="240" height="130"></canvas>
+                <div class="rating-chart-empty muted" id="rating-chart-empty">Nog geen rating data.</div>
+            </div>
         </div>
     </header>
 
@@ -80,7 +104,13 @@
                             <div>
                                 <strong>{{ match.name }}</strong>
                                 <span>{{ match.format or 'Unknown format' }} · {{ match.created_at }}</span>
+                                {% if match.player1 or match.player2 %}
+                                    <span>{{ match.player1 or '?' }} vs {{ match.player2 or '?' }}</span>
+                                {% endif %}
                                 <span>Winner: {{ match.winner or 'Unknown' }}{% if match.result %} · {{ match.result }}{% endif %}</span>
+                                {% if match.rating_user and match.rating_after %}
+                                    <span class="muted">Rating: {{ match.rating_user }} → {{ match.rating_after }}</span>
+                                {% endif %}
                             </div>
                             <div class="list-actions">
                                 {% if match.replay_url %}
@@ -91,10 +121,45 @@
                                 <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
                             </div>
                         </div>
+                        {% set logs = match_logs.get(match.id, []) %}
+                        {% if logs %}
+                            <details class="collapsible" style="margin: 8px 0 12px 0;">
+                                <summary>
+                                    <span class="muted">Log ({{ logs|length }} regels)</span>
+                                </summary>
+                                <pre class="log-output" style="margin-top: 10px;">{% for row in logs %}{% if row.turn %}Turn {{ row.turn }}: {% endif %}{{ row.raw_line }}{% if not loop.last %}
+{% endif %}{% endfor %}</pre>
+                            </details>
+                        {% endif %}
                     {% endfor %}
                 </div>
             {% else %}
                 <p>No matches yet.</p>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Team nicknames</h2>
+            {% if team_pokemon %}
+                <div class="list">
+                    {% for item in team_pokemon %}
+                        <div class="list-item">
+                            <div>
+                                <strong>{{ item.nickname }}</strong>
+                                {% if item.species %}
+                                    <span class="muted">({{ item.species }})</span>
+                                {% endif %}
+                            </div>
+                            {% if item.source_url %}
+                                <div class="list-actions">
+                                    <a class="chip" href="{{ item.source_url }}" target="_blank" rel="noreferrer">Pokepaste</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="muted">Nog geen nicknames opgeslagen voor dit team.</p>
             {% endif %}
         </section>
 
@@ -150,11 +215,21 @@
     </main>
 
     <script type="application/json" id="damage-rows-data">{{ damage_rows | tojson | safe }}</script>
+    <script type="application/json" id="rating-history-data">{{ rating_history | tojson | safe }}</script>
     <script>
         const damageRows = JSON.parse(document.getElementById('damage-rows-data')?.textContent || '[]');
+        const ratingHistory = JSON.parse(document.getElementById('rating-history-data')?.textContent || '[]');
         const attackerSelect = document.getElementById('attacker-select');
         const defenderSelect = document.getElementById('defender-select');
         const output = document.getElementById('damage-output');
+        const ratingWrapper = document.getElementById('rating-wrapper');
+        const ratingCard = document.getElementById('rating-card');
+        const ratingChart = document.getElementById('rating-chart');
+        const ratingCanvas = document.getElementById('rating-canvas');
+        const ratingElo = document.getElementById('rating-elo');
+        const ratingFormat = document.getElementById('rating-format');
+        const ratingChartEmpty = document.getElementById('rating-chart-empty');
+        const ratingChartRange = document.getElementById('rating-chart-range');
 
         const normalize = (value) => (value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
         const isFiniteNumber = (value) => Number.isFinite(value);
@@ -173,6 +248,7 @@
                         move,
                         min_low: null,
                         max_high: null,
+                        sum_mid: 0,
                         count: 0,
                         replay_url: row.replay_url || ''
                     };
@@ -189,11 +265,19 @@
                         ? Math.max(entry.max_high, row.value_high)
                         : row.value_high;
                 }
+                if (isFiniteNumber(row.value_low) && isFiniteNumber(row.value_high)) {
+                    entry.sum_mid += (row.value_low + row.value_high) / 2;
+                }
                 if (!entry.replay_url && row.replay_url) {
                     entry.replay_url = row.replay_url;
                 }
             });
-            return Object.values(buckets).sort((a, b) => b.max_high - a.max_high);
+            return Object.values(buckets)
+                .map((entry) => ({
+                    ...entry,
+                    avg: entry.count ? (entry.sum_mid / entry.count) : null
+                }))
+                .sort((a, b) => (b.max_high || 0) - (a.max_high || 0));
         };
 
         const renderList = (title, items) => {
@@ -215,6 +299,7 @@
                         <div>
                             <strong>${item.move}</strong>
                             <span>${formatPercent(item.min_low)} - ${formatPercent(item.max_high)}</span>
+                            <span>Avg ${formatPercent(item.avg)}</span>
                             <span class="muted">${item.count} hits</span>
                         </div>
                         <div class="list-actions">
@@ -236,6 +321,9 @@
         };
 
         const update = () => {
+            if (!attackerSelect || !defenderSelect || !output) {
+                return;
+            }
             const attacker = attackerSelect.value;
             const defender = defenderSelect.value;
             if (!attacker || !defender) {
@@ -251,6 +339,134 @@
 
         attackerSelect?.addEventListener('change', update);
         defenderSelect?.addEventListener('change', update);
+
+        const drawRatingChart = (points) => {
+            if (!ratingCanvas) {
+                return;
+            }
+            const ctx = ratingCanvas.getContext('2d');
+            if (!ctx) {
+                return;
+            }
+
+            const width = ratingCanvas.width;
+            const height = ratingCanvas.height;
+            const padding = { top: 12, right: 10, bottom: 18, left: 34 };
+            const minElo = Math.min(...points.map((point) => Number(point.elo)));
+            const maxElo = Math.max(...points.map((point) => Number(point.elo)));
+            const range = Math.max(maxElo - minElo, 1);
+
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 3; i += 1) {
+                const y = padding.top + ((height - padding.top - padding.bottom) * i / 3);
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(width - padding.right, y);
+                ctx.stroke();
+            }
+
+            const xStep = points.length > 1
+                ? (width - padding.left - padding.right) / (points.length - 1)
+                : 0;
+            const toY = (elo) => {
+                const normalized = (Number(elo) - minElo) / range;
+                return height - padding.bottom - normalized * (height - padding.top - padding.bottom);
+            };
+
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            points.forEach((point, index) => {
+                const x = padding.left + index * xStep;
+                const y = toY(point.elo);
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+
+            ctx.fillStyle = '#93c5fd';
+            points.forEach((point, index) => {
+                const x = padding.left + index * xStep;
+                const y = toY(point.elo);
+                ctx.beginPath();
+                ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = '10px system-ui, -apple-system, Segoe UI, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(`${minElo}`, 4, height - padding.bottom + 3);
+            ctx.fillText(`${maxElo}`, 4, padding.top + 3);
+        };
+
+        const initRatingCard = () => {
+            if (!ratingElo || !ratingFormat || !ratingCard || !ratingChart) {
+                return;
+            }
+            if (!ratingHistory.length) {
+                ratingElo.textContent = '—';
+                ratingFormat.textContent = 'Nog geen data';
+                ratingCard.setAttribute('aria-expanded', 'false');
+                return;
+            }
+
+            const latest = ratingHistory[ratingHistory.length - 1];
+            ratingElo.textContent = `${latest.elo}`;
+            ratingFormat.textContent = latest.format || 'Onbekend format';
+
+            if (ratingChartRange) {
+                const first = ratingHistory[0];
+                ratingChartRange.textContent = `${first.elo} → ${latest.elo}`;
+            }
+
+            if (ratingHistory.length < 2) {
+                if (ratingChartEmpty) {
+                    ratingChartEmpty.hidden = false;
+                    ratingChartEmpty.textContent = 'Minimaal 2 punten nodig voor een graph.';
+                }
+            } else {
+                drawRatingChart(ratingHistory);
+                if (ratingChartEmpty) {
+                    ratingChartEmpty.hidden = true;
+                }
+            }
+
+            const toggleChart = () => {
+                const nextState = ratingChart.hasAttribute('hidden');
+                if (nextState) {
+                    ratingChart.removeAttribute('hidden');
+                } else {
+                    ratingChart.setAttribute('hidden', '');
+                }
+                ratingCard.setAttribute('aria-expanded', String(nextState));
+            };
+
+            ratingCard.addEventListener('click', toggleChart);
+            ratingCard.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    toggleChart();
+                }
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!ratingWrapper?.contains(event.target)) {
+                    ratingChart.setAttribute('hidden', '');
+                    ratingCard.setAttribute('aria-expanded', 'false');
+                }
+            });
+        };
+
+        initRatingCard();
     </script>
 </body>
 </html>

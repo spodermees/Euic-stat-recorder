@@ -1,6 +1,11 @@
 (() => {
+    const STORAGE_KEY_AUTO_TRACK = "autoTrack";
+    const DEFAULT_AUTO_TRACK = true;
     const seenNodes = new WeakSet();
     let sentCount = 0;
+    let observer = null;
+    let activeRoot = null;
+    let autoTrackEnabled = DEFAULT_AUTO_TRACK;
 
     function sendMessage(message) {
         return new Promise((resolve) => {
@@ -49,6 +54,22 @@
 
     function cleanLine(text) {
         return String(text || "").replace(/\s+/g, " ").trim();
+    }
+
+    function readAutoTrackSetting() {
+        return new Promise((resolve) => {
+            chrome.storage.sync.get({ [STORAGE_KEY_AUTO_TRACK]: DEFAULT_AUTO_TRACK }, (result) => {
+                resolve(result[STORAGE_KEY_AUTO_TRACK] !== false);
+            });
+        });
+    }
+
+    function stopWatching() {
+        if (observer) {
+            observer.disconnect();
+            observer = null;
+        }
+        activeRoot = null;
     }
 
     async function pokeRecorder(reason) {
@@ -110,20 +131,42 @@
 
     function watchLogRoot(logRoot) {
         collectLinesFromLog(logRoot);
-        const observer = new MutationObserver(() => collectLinesFromLog(logRoot));
-        observer.observe(logRoot, { childList: true, subtree: true });
+        const nextObserver = new MutationObserver(() => collectLinesFromLog(logRoot));
+        nextObserver.observe(logRoot, { childList: true, subtree: true });
         setBadge("Recorder bridge: watching");
-        return observer;
+        return nextObserver;
     }
 
     async function boot() {
         ensureBadge();
         pokeRecorder("boot");
 
-        let observer = null;
-        let activeRoot = null;
+        autoTrackEnabled = await readAutoTrackSetting();
+        if (!autoTrackEnabled) {
+            stopWatching();
+            setBadge("Recorder bridge: auto-track uit");
+        }
+
+        chrome.storage.onChanged.addListener((changes, area) => {
+            if (area !== "sync" || !changes[STORAGE_KEY_AUTO_TRACK]) {
+                return;
+            }
+
+            autoTrackEnabled = changes[STORAGE_KEY_AUTO_TRACK].newValue !== false;
+            if (!autoTrackEnabled) {
+                stopWatching();
+                setBadge("Recorder bridge: auto-track uit");
+                return;
+            }
+
+            setBadge("Recorder bridge: wacht op log");
+        });
 
         setInterval(() => {
+            if (!autoTrackEnabled) {
+                return;
+            }
+
             const root = findLogRoot();
             if (!root) {
                 return;
@@ -131,6 +174,7 @@
             if (root === activeRoot) {
                 return;
             }
+
             activeRoot = root;
             if (observer) {
                 observer.disconnect();

@@ -3,6 +3,7 @@ const PREP_TEAMS_URL = `${LOCAL_BASE_URL}/api/prep_teams`;
 const STORAGE_KEY_REPLAY_LIST = "replayList";
 const STORAGE_KEY_TEAM_ID = "selectedTeamId";
 const STORAGE_KEY_TEAM_NAME = "selectedTeamName";
+const STORAGE_KEY_AUTO_TRACK = "autoTrack";
 
 const statusEl = document.getElementById("status");
 const teamSelect = document.getElementById("team-select");
@@ -10,6 +11,7 @@ const replayInput = document.getElementById("replay-input");
 const replayListInput = document.getElementById("replay-list");
 const saveReplayButton = document.getElementById("save-replay");
 const sendReplaysButton = document.getElementById("send-replays");
+const autoTrackToggle = document.getElementById("auto-track-toggle");
 
 function setStatus(text, isError = false) {
     statusEl.textContent = text;
@@ -49,10 +51,18 @@ async function restore() {
         [STORAGE_KEY_REPLAY_LIST]: "",
         [STORAGE_KEY_TEAM_ID]: "",
         [STORAGE_KEY_TEAM_NAME]: "",
+        [STORAGE_KEY_AUTO_TRACK]: true,
     });
     replayListInput.value = (data[STORAGE_KEY_REPLAY_LIST] || "").trim();
+    autoTrackToggle.checked = data[STORAGE_KEY_AUTO_TRACK] !== false;
     await loadTeams(data[STORAGE_KEY_TEAM_ID], data[STORAGE_KEY_TEAM_NAME]);
     await refreshQueueStatus();
+}
+
+async function persistAutoTrackToggle() {
+    const enabled = autoTrackToggle.checked;
+    await setStorage({ [STORAGE_KEY_AUTO_TRACK]: enabled });
+    setStatus(enabled ? "Auto-track aan." : "Auto-track uit.");
 }
 
 async function refreshQueueStatus() {
@@ -231,5 +241,6 @@ saveReplayButton.addEventListener("click", saveReplay);
 sendReplaysButton.addEventListener("click", sendReplaysToApi);
 replayListInput.addEventListener("blur", persistReplayList);
 teamSelect.addEventListener("change", persistSelectedTeam);
+autoTrackToggle.addEventListener("change", persistAutoTrackToggle);
 window.addEventListener("focus", flushQueueNow);
 restore();

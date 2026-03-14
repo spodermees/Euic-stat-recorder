@@ -12,736 +12,144 @@
     <meta name="apple-mobile-web-app-title" content="Showdown Recorder">
     <meta name="theme-color" content="#0f172a">
 </head>
-<body>
+<body data-active-team-id="3">
     <header class="app-header">
         <div>
-            <h1>Showdown Recorder</h1>
+            <h1 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>Showdown Recorder</h1>
             <p>Static snapshot for mobile viewing.</p>
         </div>
+        
+            <div class="actions">
+                <span class="chip">Team: calyogre</span>
+                
+                    <span class="chip">3 teams</span>
+                
+            </div>
+        
         <div class="stat">
             <span>Total events</span>
-            <strong>535</strong>
+            <strong>0</strong>
+        </div>
+        <div class="rating-wrapper" id="rating-wrapper">
+            <div class="rating rating-clickable" id="rating-card" aria-live="polite" role="button" tabindex="0" aria-expanded="false">
+                <span>Current rating</span>
+                <strong id="rating-elo">...</strong>
+                <small id="rating-format" class="muted">Loading...</small>
+                <small class="muted">Klik voor graph</small>
+            </div>
+            <div class="rating-chart" id="rating-chart" role="dialog" aria-label="Rating history" hidden>
+                <div class="rating-chart-header">
+                    <span>Rating history</span>
+                    <span id="rating-chart-range" class="muted"></span>
+                </div>
+                <canvas id="rating-canvas" width="240" height="130"></canvas>
+                <div class="rating-chart-empty muted" id="rating-chart-empty">Nog geen rating data.</div>
+            </div>
         </div>
     </header>
 
     <main class="container">
         <section class="card">
-            <h2>Overall damage (all matches)</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Overall damage (all matches)</h2>
             
-                <div class="summary">
-                    <span class="chip damage">Min 0.0%</span>
-                    <span class="chip damage">Max 99.0%</span>
-                    <span class="chip">Avg 30.2%</span>
-                    <span class="muted">511 hits</span>
-                </div>
-
-                <form class="form-grid" id="damage-form" style="margin-top:16px;">
-                    <label>
-                        Mijn Pokémon
-                        <select name="attacker" id="attacker-select" required>
-                            <option value="" disabled selected>Selecteer mijn Pokémon</option>
-                            
-                                <option value="Eddie bear">Eddie bear</option>
-                            
-                                <option value="TornWithoutOgre">TornWithoutOgre</option>
-                            
-                                <option value="Does not care">Does not care</option>
-                            
-                                <option value="The healing moon">The healing moon</option>
-                            
-                                <option value="The stupid cat">The stupid cat</option>
-                            
-                                <option value="Giraffe">Giraffe</option>
-                            
-                        </select>
-                    </label>
-                    <label>
-                        Tegenstander Pokémon
-                        <select name="defender" id="defender-select" required>
-                            <option value="" disabled selected>Selecteer tegenstander</option>
-                            
-                                <option value="Amoonguss">Amoonguss</option>
-                            
-                                <option value="Annihilape">Annihilape</option>
-                            
-                                <option value="Chi-Yu">Chi-Yu</option>
-                            
-                                <option value="Chien-Pao">Chien-Pao</option>
-                            
-                                <option value="Clefairy">Clefairy</option>
-                            
-                                <option value="Flutter Mane">Flutter Mane</option>
-                            
-                                <option value="Gholdengo">Gholdengo</option>
-                            
-                                <option value="Incineroar">Incineroar</option>
-                            
-                                <option value="Iron Hands">Iron Hands</option>
-                            
-                                <option value="Landorus">Landorus</option>
-                            
-                                <option value="Mimikyu">Mimikyu</option>
-                            
-                                <option value="Ninetales">Ninetales</option>
-                            
-                                <option value="Ogerpon">Ogerpon</option>
-                            
-                                <option value="Okidogi">Okidogi</option>
-                            
-                                <option value="Pelipper">Pelipper</option>
-                            
-                                <option value="Raging Bolt">Raging Bolt</option>
-                            
-                                <option value="Regidrago">Regidrago</option>
-                            
-                                <option value="Rillaboom">Rillaboom</option>
-                            
-                                <option value="Ursaluna">Ursaluna</option>
-                            
-                                <option value="Urshifu">Urshifu</option>
-                            
-                                <option value="Zapdos">Zapdos</option>
-                            
-                                <option value="healing moon">healing moon</option>
-                            
-                                <option value="stupid cat">stupid cat</option>
-                            
-                        </select>
-                    </label>
-                </form>
-
-                <div class="damage-dual" id="damage-output">
-                    <div>
-                        <h3>Mijn Pokémon → Tegenstander</h3>
-                        <p class="muted">Selecteer twee Pokémon om de dmg range te zien.</p>
-                    </div>
-                    <div>
-                        <h3>Tegenstander → Mijn Pokémon</h3>
-                        <p class="muted">Selecteer twee Pokémon om de dmg range te zien.</p>
-                    </div>
-                </div>
+                <p>No damage data yet. Export again when there is data.</p>
             
         </section>
 
         <section class="card">
-            <h2>Matches</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>Matches</h2>
+            
+                <p>No matches yet.</p>
+            
+        </section>
+
+        <section class="card">
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Team nicknames</h2>
             
                 <div class="list">
                     
                         <div class="list-item">
                             <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-27T07:51:20</span>
-                                <span>Winner: altamandoivan</span>
-                            </div>
-                            <div class="list-actions">
+                                <strong>doesnt care 2</strong>
                                 
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534" target="_blank" rel="noreferrer">Replay</a>
+                                    <span class="muted">(Urshifu-Rapid-Strike)</span>
                                 
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
                             </div>
+                            
+                                <div class="list-actions">
+                                    <a class="chip" href="https://pokepast.es/67735da444b90d87" target="_blank" rel="noreferrer">Pokepaste</a>
+                                </div>
+                            
                         </div>
                     
                         <div class="list-item">
                             <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-27T07:51:20</span>
-                                <span>Winner: altamandoivan · Won</span>
-                            </div>
-                            <div class="list-actions">
+                                <strong>maiden (Indeedee-F)</strong>
                                 
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051" target="_blank" rel="noreferrer">Replay</a>
+                                    <span class="muted">(F)</span>
                                 
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
                             </div>
+                            
+                                <div class="list-actions">
+                                    <a class="chip" href="https://pokepast.es/67735da444b90d87" target="_blank" rel="noreferrer">Pokepaste</a>
+                                </div>
+                            
                         </div>
                     
                         <div class="list-item">
                             <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-27T07:50:48</span>
-                                <span>Winner: altamandoivan</span>
-                            </div>
-                            <div class="list-actions">
+                                <strong>ogre&#39;s new friend</strong>
                                 
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534" target="_blank" rel="noreferrer">Replay</a>
+                                    <span class="muted">(Raichu)</span>
                                 
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
                             </div>
+                            
+                                <div class="list-actions">
+                                    <a class="chip" href="https://pokepast.es/67735da444b90d87" target="_blank" rel="noreferrer">Pokepaste</a>
+                                </div>
+                            
                         </div>
                     
                         <div class="list-item">
                             <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-27T07:50:48</span>
-                                <span>Winner: altamandoivan · Won</span>
-                            </div>
-                            <div class="list-actions">
+                                <strong>freddie bear</strong>
                                 
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051" target="_blank" rel="noreferrer">Replay</a>
+                                    <span class="muted">(Ursaluna-Bloodmoon)</span>
                                 
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
                             </div>
+                            
+                                <div class="list-actions">
+                                    <a class="chip" href="https://pokepast.es/67735da444b90d87" target="_blank" rel="noreferrer">Pokepaste</a>
+                                </div>
+                            
                         </div>
                     
                         <div class="list-item">
                             <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T13:18:20</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
+                                <strong>tera rider</strong>
                                 
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330" target="_blank" rel="noreferrer">Replay</a>
+                                    <span class="muted">(Calyrex-Ice)</span>
                                 
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
                             </div>
+                            
+                                <div class="list-actions">
+                                    <a class="chip" href="https://pokepast.es/67735da444b90d87" target="_blank" rel="noreferrer">Pokepaste</a>
+                                </div>
+                            
                         </div>
                     
                         <div class="list-item">
                             <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T13:12:18</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T12:42:12</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T12:42:12</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T12:42:12</span>
-                                <span>Winner: spodermees</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T12:42:11</span>
-                                <span>Winner: spodermees · Lost</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526499966" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T12:41:54</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T12:41:54</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T12:41:53</span>
-                                <span>Winner: spodermees</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:51</span>
-                                <span>Winner: eggs egs · Lost</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:51</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:51</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:50</span>
-                                <span>Winner: SupremeAlpaca94 · Lost</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:50</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:50</span>
-                                <span>Winner: raay_tv · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:49</span>
-                                <span>Winner: raay_tv · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:39</span>
-                                <span>Winner: eggs egs</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526480875" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:39</span>
-                                <span>Winner: eggs egs · Lost</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:38</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:38</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:38</span>
-                                <span>Winner: SupremeAlpaca94 · Lost</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:37</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:37</span>
-                                <span>Winner: raay_tv · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-26T10:17:37</span>
-                                <span>Winner: raay_tv · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-25T22:23:17</span>
-                                <span>Winner: GIANT256 · Lost</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-25T22:19:00</span>
-                                <span>Winner: GIANT256 · Lost</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-25T22:15:53</span>
-                                <span>Winner: GIANT256 · Lost</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-25T22:15:44</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2525936454" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-25T22:13:48</span>
-                                <span>Winner: GIANT256 · Lost</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-25T22:13:20</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2525936454" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-25T22:08:48</span>
-                                <span>Winner: GIANT256 · Lost</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-25T22:03:43</span>
-                                <span>Winner: GIANT256 · Lost</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-25T22:02:32</span>
-                                <span>Winner: GIANT256 · Lost</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-25T22:02:32</span>
-                                <span>Winner: GIANT256 · Lost</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw" target="_blank" rel="noreferrer">Replay</a>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>[Gen 9] VGC 2026 Reg F (Bo3) · 2026-01-25T15:20:28</span>
-                                <span>Winner: spodermees · Won</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <span class="chip">Geen replay</span>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>Unknown format · 2026-01-25T15:17:29</span>
-                                <span>Winner: Unknown</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <span class="chip">Geen replay</span>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>Unknown format · 2026-01-25T15:09:21</span>
-                                <span>Winner: Unknown</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <span class="chip">Geen replay</span>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>Unknown format · 2026-01-25T15:05:21</span>
-                                <span>Winner: Unknown</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <span class="chip">Geen replay</span>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Replay</strong>
-                                <span>Unknown format · 2026-01-25T15:01:18</span>
-                                <span>Winner: Unknown</span>
-                            </div>
-                            <div class="list-actions">
-                                
-                                    <span class="chip">Geen replay</span>
-                                
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
-                            </div>
-                        </div>
-                    
-                        <div class="list-item">
-                            <div>
-                                <strong>Live</strong>
-                                <span>Unknown format · 2026-01-25T14:27:35</span>
-                                <span>Winner: Unknown</span>
-                            </div>
-                            <div class="list-actions">
+                                <strong>ogre without torn</strong>
                                 
-                                    <span class="chip">Geen replay</span>
+                                    <span class="muted">(Kyogre)</span>
                                 
-                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
                             </div>
+                            
+                                <div class="list-actions">
+                                    <a class="chip" href="https://pokepast.es/67735da444b90d87" target="_blank" rel="noreferrer">Pokepaste</a>
+                                </div>
+                            
                         </div>
                     
                 </div>
@@ -749,187 +157,34 @@
         </section>
 
         <section class="card">
-            <h2>Prep</h2>
+            <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Prep</h2>
             
                 <p class="muted">Nog geen algemene prep-notes.</p>
             
 
-            <h3 style="margin-top: 24px;">Matchups</h3>
+            <h3 class="title-with-icon" style="margin-top: 24px;"><span class="poke-icon poke-icon-bolt" aria-hidden="true"></span>Matchups</h3>
             
-                <div class="prep-grid">
-                    
-                        <div class="prep-tile">
-                            <span class="prep-title">Articuno snow</span>
-                            <span class="muted">Laatst bijgewerkt 2026-01-27T11:01:20</span>
-                            <div class="modal-body" style="padding: 0;">
-                                
-                                    
-                                    
-                                        <div class="prep-field">
-                                            <strong>Lead</strong>
-                                            <p class="muted">cres en incin</p>
-                                        </div>
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                        <div class="prep-field">
-                                            <strong>Threats</strong>
-                                            <p class="muted">Articuno en Landorus als ze dat hebben</p>
-                                        </div>
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                        <div class="prep-field">
-                                            <strong>Notes</strong>
-                                            <p class="muted">Als ze geen manier hebben om trickroom te stoppen speel om trickroom heen<br>Trick room kan wel heel passief zijn dus daar moet ik wel op letten</p>
-                                        </div>
-                                    
-                                
-                            </div>
-                        </div>
-                    
-                        <div class="prep-tile">
-                            <span class="prep-title">Hard Trickroom</span>
-                            <span class="muted">Laatst bijgewerkt 2026-01-27T10:52:19</span>
-                            <div class="modal-body" style="padding: 0;">
-                                
-                                    
-                                    
-                                        <div class="prep-field">
-                                            <strong>Lead</strong>
-                                            <p class="muted">Torn plus urshifu</p>
-                                        </div>
-                                    
-                                
-                                    
-                                    
-                                        <div class="prep-field">
-                                            <strong>Wincon</strong>
-                                            <p class="muted">Urshifu en incineroar</p>
-                                        </div>
-                                    
-                                
-                                    
-                                    
-                                        <div class="prep-field">
-                                            <strong>Threats</strong>
-                                            <p class="muted">Ursaluna en amoongus</p>
-                                        </div>
-                                    
-                                
-                                    
-                                    
-                                        <div class="prep-field">
-                                            <strong>Tera</strong>
-                                            <p class="muted">Urshifu als flutter mane<br>Mogelijk tera tegen ursaluna</p>
-                                        </div>
-                                    
-                                
-                                    
-                                    
-                                        <div class="prep-field">
-                                            <strong>Speed control</strong>
-                                            <p class="muted">We spelen om tailwind heen met trick room mons stel ze krijgen het op</p>
-                                        </div>
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                        <div class="prep-field">
-                                            <strong>Notes</strong>
-                                            <p class="muted">Als het porygon of cres is spelen we om torn heen<br>Zij gaan waarschijnlijk torn focussen</p>
-                                        </div>
-                                    
-                                
-                            </div>
-                        </div>
-                    
-                        <div class="prep-tile">
-                            <span class="prep-title">Raging bolt balance</span>
-                            <span class="muted">Laatst bijgewerkt 2026-01-27T10:52:18</span>
-                            <div class="modal-body" style="padding: 0;">
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                
-                            </div>
-                        </div>
-                    
-                        <div class="prep-tile">
-                            <span class="prep-title">Tailwind</span>
-                            <span class="muted">Laatst bijgewerkt 2026-01-27T10:38:45</span>
-                            <div class="modal-body" style="padding: 0;">
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                
-                                    
-                                    
-                                
-                            </div>
-                        </div>
-                    
-                </div>
+                <p class="muted">Nog geen matchups.</p>
             
         </section>
     </main>
 
-    <script type="application/json" id="damage-rows-data">[{"actor": null, "target": "Giraffe", "move": null, "value_low": 59.0, "value_high": 59.0, "replay_url": null}, {"actor": null, "target": "Giraffe", "move": null, "value_low": 9.0, "value_high": 9.0, "replay_url": null}, {"actor": null, "target": "Pelipper", "move": null, "value_low": 56.99999999999999, "value_high": 56.99999999999999, "replay_url": null}, {"actor": null, "target": "Landorus", "move": null, "value_low": 56.99999999999999, "value_high": 56.99999999999999, "replay_url": null}, {"actor": null, "target": "Does not care", "move": null, "value_low": 1.0, "value_high": 1.0, "replay_url": null}, {"actor": null, "target": "Pelipper", "move": null, "value_low": 8.0, "value_high": 8.0, "replay_url": null}, {"actor": null, "target": "Amoonguss", "move": null, "value_low": 28.999999999999996, "value_high": 28.999999999999996, "replay_url": null}, {"actor": "Incineroar", "target": "TornWithoutOgre", "move": "Fake Out", "value_low": 83.0, "value_high": 83.0, "replay_url": null}, {"actor": "Landorus", "target": "Giraffe", "move": "Sludge Bomb", "value_low": 41.0, "value_high": 41.0, "replay_url": null}, {"actor": "Giraffe", "target": "Urshifu", "move": "Thunderclap", "value_low": 13.0, "value_high": 13.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 44.0, "value_high": 44.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 35.0, "value_high": 35.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 27.0, "value_high": 27.0, "replay_url": null}, {"actor": "Pelipper", "target": "Giraffe", "move": "Weather Ball", "value_low": 7.000000000000001, "value_high": 7.000000000000001, "replay_url": null}, {"actor": "TornWithoutOgre", "target": "Pelipper", "move": "Bleakwind Storm", "value_low": 57.99999999999999, "value_high": 57.99999999999999, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 0.0, "value_high": 0.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 8.0, "value_high": 8.0, "replay_url": null}, {"actor": "Pelipper", "target": "Giraffe", "move": "Weather Ball", "value_low": 20.0, "value_high": 20.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 0.0, "value_high": 0.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": null}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 8.0, "value_high": 8.0, "replay_url": null}, {"actor": "Pelipper", "target": "Giraffe", "move": "Weather Ball", "value_low": 20.0, "value_high": 20.0, "replay_url": null}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 25.0, "value_high": 25.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Urshifu", "target": "Eddie bear", "move": "Surging Strikes", "value_low": 16.0, "value_high": 16.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Urshifu", "target": "Eddie bear", "move": "Surging Strikes", "value_low": 16.0, "value_high": 16.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Urshifu", "target": "Eddie bear", "move": "Surging Strikes", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Landorus", "target": "healing moon", "move": "U-turn", "value_low": 52.0, "value_high": 52.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Aqua Jet", "value_low": 10.0, "value_high": 10.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "The stupid cat", "target": "Urshifu", "move": "Fake Out", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Raging Bolt", "target": "healing moon", "move": "Thunderbolt", "value_low": 0.0, "value_high": 0.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 36.99999999999999, "value_high": 36.99999999999999, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Raging Bolt", "target": "Giraffe", "move": "Thunderclap", "value_low": 0.0, "value_high": 0.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Gholdengo", "target": "stupid cat", "move": "Make It Rain", "value_low": 33.0, "value_high": 33.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 8.0, "value_high": 8.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Earthquake", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "healing moon", "move": "U-turn", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 13.0, "value_high": 13.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 39.0, "value_high": 39.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.000000000000007, "value_high": 6.000000000000007, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 17.999999999999993, "value_high": 17.999999999999993, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Eddie bear", "move": "Surging Strikes", "value_low": 31.0, "value_high": 31.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Gholdengo", "target": "stupid cat", "move": "Make It Rain", "value_low": 33.0, "value_high": 33.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 8.0, "value_high": 8.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Earthquake", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "healing moon", "move": "U-turn", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 13.0, "value_high": 13.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 39.0, "value_high": 39.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.000000000000007, "value_high": 6.000000000000007, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 17.999999999999993, "value_high": 17.999999999999993, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Eddie bear", "move": "Surging Strikes", "value_low": 31.0, "value_high": 31.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Gholdengo", "target": "stupid cat", "move": "Make It Rain", "value_low": 33.0, "value_high": 33.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 8.0, "value_high": 8.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Earthquake", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "healing moon", "move": "U-turn", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 13.0, "value_high": 13.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 39.0, "value_high": 39.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.000000000000007, "value_high": 6.000000000000007, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 17.999999999999993, "value_high": 17.999999999999993, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Eddie bear", "move": "Surging Strikes", "value_low": 31.0, "value_high": 31.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 0.0, "value_high": 0.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2525936454"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2525936454"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 8.0, "value_high": 8.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2525936454"}, {"actor": "Pelipper", "target": "Giraffe", "move": "Weather Ball", "value_low": 20.0, "value_high": 20.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2525936454"}, {"actor": "Gholdengo", "target": "stupid cat", "move": "Make It Rain", "value_low": 33.0, "value_high": 33.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 8.0, "value_high": 8.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Earthquake", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "healing moon", "move": "U-turn", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 13.0, "value_high": 13.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 39.0, "value_high": 39.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.000000000000007, "value_high": 6.000000000000007, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 17.999999999999993, "value_high": 17.999999999999993, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Eddie bear", "move": "Surging Strikes", "value_low": 31.0, "value_high": 31.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 0.0, "value_high": 0.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2525936454"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2525936454"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 8.0, "value_high": 8.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2525936454"}, {"actor": "Pelipper", "target": "Giraffe", "move": "Weather Ball", "value_low": 20.0, "value_high": 20.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2525936454"}, {"actor": "Gholdengo", "target": "stupid cat", "move": "Make It Rain", "value_low": 33.0, "value_high": 33.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 8.0, "value_high": 8.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Earthquake", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "healing moon", "move": "U-turn", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 13.0, "value_high": 13.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 39.0, "value_high": 39.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.000000000000007, "value_high": 6.000000000000007, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 17.999999999999993, "value_high": 17.999999999999993, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Eddie bear", "move": "Surging Strikes", "value_low": 31.0, "value_high": 31.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "The stupid cat", "target": "Gholdengo", "move": "Flare Blitz", "value_low": 22.0, "value_high": 22.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "The stupid cat", "target": "stupid cat", "move": "Flare Blitz", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Gholdengo", "target": "Giraffe", "move": "Make It Rain", "value_low": 39.0, "value_high": 39.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Gholdengo", "target": "stupid cat", "move": "Make It Rain", "value_low": 33.0, "value_high": 33.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 8.0, "value_high": 8.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Giraffe", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Raging Bolt", "move": "Facade", "value_low": 60.0, "value_high": 60.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Raging Bolt", "target": "healing moon", "move": "Draco Meteor", "value_low": 37.0, "value_high": 37.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Earthquake", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "healing moon", "move": "U-turn", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Surging Strikes", "value_low": 13.0, "value_high": 13.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "The healing moon", "target": "Urshifu", "move": "Dazzling Gleam", "value_low": 42.00000000000001, "value_high": 42.00000000000001, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "The healing moon", "target": "Landorus", "move": "Dazzling Gleam", "value_low": 23.0, "value_high": 23.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 39.0, "value_high": 39.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.000000000000007, "value_high": 6.000000000000007, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 17.999999999999993, "value_high": 17.999999999999993, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Urshifu", "target": "Eddie bear", "move": "Surging Strikes", "value_low": 31.0, "value_high": 31.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526164731-q9dsfccytvf732smqg8hf9o7b40b3k3pw"}, {"actor": "Landorus", "target": "healing moon", "move": "U-turn", "value_low": 37.0, "value_high": 37.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Earthquake", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 25.0, "value_high": 25.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Eddie bear", "target": "Urshifu", "move": "Facade", "value_low": 87.0, "value_high": 87.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Urshifu", "target": "Eddie bear", "move": "Surging Strikes", "value_low": 16.0, "value_high": 16.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Urshifu", "target": "Eddie bear", "move": "Surging Strikes", "value_low": 16.0, "value_high": 16.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Urshifu", "target": "Eddie bear", "move": "Surging Strikes", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Landorus", "target": "healing moon", "move": "U-turn", "value_low": 52.0, "value_high": 52.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Urshifu", "target": "healing moon", "move": "Aqua Jet", "value_low": 10.0, "value_high": 10.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "The stupid cat", "target": "Urshifu", "move": "Fake Out", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Raging Bolt", "target": "healing moon", "move": "Thunderbolt", "value_low": 0.0, "value_high": 0.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 42.00000000000001, "value_high": 42.00000000000001, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 36.99999999999999, "value_high": 36.99999999999999, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Urshifu", "target": "stupid cat", "move": "Surging Strikes", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "The stupid cat", "target": "Raging Bolt", "move": "Knock Off", "value_low": 27.0, "value_high": 27.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Landorus", "target": "Giraffe", "move": "Earthquake", "value_low": 98.0, "value_high": 98.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Giraffe", "target": "Landorus", "move": "Dragon Pulse", "value_low": 91.0, "value_high": 91.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "Raging Bolt", "target": "Giraffe", "move": "Thunderclap", "value_low": 0.0, "value_high": 0.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526161831-t3uh1f148pyg2p05111jtv99vkyomxrpw"}, {"actor": "The stupid cat", "target": "Gholdengo", "move": "Flare Blitz", "value_low": 91.0, "value_high": 91.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "The stupid cat", "target": "stupid cat", "move": "Flare Blitz", "value_low": 28.0, "value_high": 28.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "Flutter Mane", "target": "healing moon", "move": "Moonblast", "value_low": 22.0, "value_high": 22.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "Eddie bear", "target": "Flutter Mane", "move": "Earthquake", "value_low": 74.0, "value_high": 74.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Earthquake", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "Flutter Mane", "target": "Giraffe", "move": "Moonblast", "value_low": 77.0, "value_high": 77.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "The stupid cat", "target": "stupid cat", "move": "Flare Blitz", "value_low": 7.0, "value_high": 7.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "Ogerpon", "target": "Eddie bear", "move": "Ivy Cudgel", "value_low": 72.0, "value_high": 72.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "Flutter Mane", "target": "TornWithoutOgre", "move": "Icy Wind", "value_low": 25.0, "value_high": 25.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "Does not care", "move": "Icy Wind", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Does not care", "target": "Gholdengo", "move": "Wicked Blow", "value_low": 60.0, "value_high": 60.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "TornWithoutOgre", "move": "Icy Wind", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "Does not care", "move": "Icy Wind", "value_low": 20.0, "value_high": 20.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "TornWithoutOgre", "target": "Flutter Mane", "move": "Bleakwind Storm", "value_low": 28.0, "value_high": 28.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "TornWithoutOgre", "target": "Landorus", "move": "Bleakwind Storm", "value_low": 40.0, "value_high": 40.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "TornWithoutOgre", "move": "Icy Wind", "value_low": 24.0, "value_high": 24.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Does not care", "target": "Landorus", "move": "Sucker Punch", "value_low": 43.0, "value_high": 43.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "TornWithoutOgre", "move": "Icy Wind", "value_low": 22.0, "value_high": 22.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "Does not care", "move": "Icy Wind", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "Giraffe", "move": "Icy Wind", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "stupid cat", "move": "Moonblast", "value_low": 31.0, "value_high": 31.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Giraffe", "target": "Zapdos", "move": "Thunderclap", "value_low": 97.0, "value_high": 97.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "Zapdos", "target": "TornWithoutOgre", "move": "U-turn", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "Flutter Mane", "target": "Giraffe", "move": "Moonblast", "value_low": 98.0, "value_high": 98.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "TornWithoutOgre", "target": "Landorus", "move": "Bleakwind Storm", "value_low": 36.0, "value_high": 36.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "Flutter Mane", "target": "TornWithoutOgre", "move": "Shadow Ball", "value_low": 38.0, "value_high": 38.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "Giraffe", "target": "Landorus", "move": "Dragon Pulse", "value_low": 59.0, "value_high": 59.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "Does not care", "target": "Flutter Mane", "move": "Wicked Blow", "value_low": 56.0, "value_high": 56.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "TornWithoutOgre", "target": "Amoonguss", "move": "Bleakwind Storm", "value_low": 54.0, "value_high": 54.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "TornWithoutOgre", "target": "Flutter Mane", "move": "Bleakwind Storm", "value_low": 33.0, "value_high": 33.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "TornWithoutOgre", "target": "Amoonguss", "move": "Bleakwind Storm", "value_low": 33.0, "value_high": 33.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "Zapdos", "target": "Does not care", "move": "Brave Bird", "value_low": 70.0, "value_high": 70.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "Does not care", "target": "Flutter Mane", "move": "Wicked Blow", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "Amoonguss", "target": "Does not care", "move": "Pollen Puff", "value_low": 13.0, "value_high": 13.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "TornWithoutOgre", "target": "Rillaboom", "move": "Bleakwind Storm", "value_low": 43.99999999999999, "value_high": 43.99999999999999, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "TornWithoutOgre", "target": "Landorus", "move": "Bleakwind Storm", "value_low": 40.0, "value_high": 40.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "Landorus", "target": "TornWithoutOgre", "move": "Sludge Bomb", "value_low": 55.0, "value_high": 55.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "TornWithoutOgre", "target": "Amoonguss", "move": "Bleakwind Storm", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "Landorus", "target": "Eddie bear", "move": "Sludge Bomb", "value_low": 0.0, "value_high": 0.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "Rillaboom", "target": "Rillaboom", "move": "Wood Hammer", "value_low": 30.0, "value_high": 30.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "Flutter Mane", "target": "Does not care", "move": "Moonblast", "value_low": 32.0, "value_high": 32.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "Does not care", "target": "Amoonguss", "move": "Wicked Blow", "value_low": 47.0, "value_high": 47.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "TornWithoutOgre", "target": "Flutter Mane", "move": "Bleakwind Storm", "value_low": 33.0, "value_high": 33.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "Landorus", "target": "TornWithoutOgre", "move": "Sludge Bomb", "value_low": 81.0, "value_high": 81.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "Rillaboom", "target": "Eddie bear", "move": "Fake Out", "value_low": 10.0, "value_high": 10.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "TornWithoutOgre", "target": "Landorus", "move": "Bleakwind Storm", "value_low": 36.0, "value_high": 36.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "TornWithoutOgre", "target": "Rillaboom", "move": "Bleakwind Storm", "value_low": 44.99999999999999, "value_high": 44.99999999999999, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "Rillaboom", "target": "Eddie bear", "move": "Grassy Glide", "value_low": 49.0, "value_high": 49.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "Does not care", "target": "Rillaboom", "move": "Wicked Blow", "value_low": 51.00000000000001, "value_high": 51.00000000000001, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Headlong Rush", "value_low": 0.0, "value_high": 0.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "Does not care", "target": "Clefairy", "move": "Wicked Blow", "value_low": 22.0, "value_high": 22.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "The healing moon", "target": "Regidrago", "move": "Dazzling Gleam", "value_low": 22.0, "value_high": 22.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "Regidrago", "target": "Eddie bear", "move": "Dragon Energy", "value_low": 85.0, "value_high": 85.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "Regidrago", "target": "Eddie bear", "move": "Dragon Energy", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "The healing moon", "target": "Regidrago", "move": "Dazzling Gleam", "value_low": 25.0, "value_high": 25.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "Regidrago", "target": "Does not care", "move": "Dragon Energy", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "Does not care", "target": "Chi-Yu", "move": "Close Combat", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "Chi-Yu", "target": "healing moon", "move": "Snarl", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "The healing moon", "target": "Regidrago", "move": "Dazzling Gleam", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "Flutter Mane", "target": "healing moon", "move": "Shadow Ball", "value_low": 37.0, "value_high": 37.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Landorus", "target": "healing moon", "move": "Sludge Bomb", "value_low": 24.0, "value_high": 24.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Does not care", "target": "Clefairy", "move": "Wicked Blow", "value_low": 31.0, "value_high": 31.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Flutter Mane", "target": "healing moon", "move": "Dazzling Gleam", "value_low": 17.0, "value_high": 17.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Flutter Mane", "target": "Does not care", "move": "Dazzling Gleam", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Flutter Mane", "target": "healing moon", "move": "Dazzling Gleam", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Does not care", "target": "Flutter Mane", "move": "Sucker Punch", "value_low": 36.0, "value_high": 36.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Giraffe", "target": "Flutter Mane", "move": "Thunderclap", "value_low": 28.0, "value_high": 28.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Flutter Mane", "target": "Eddie bear", "move": "Dazzling Gleam", "value_low": 30.0, "value_high": 30.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Flutter Mane", "target": "Giraffe", "move": "Dazzling Gleam", "value_low": 25.0, "value_high": 25.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Eddie bear", "target": "Giraffe", "move": "Earthquake", "value_low": 39.0, "value_high": 39.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Eddie bear", "target": "Clefairy", "move": "Earthquake", "value_low": 34.0, "value_high": 34.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Landorus", "target": "Eddie bear", "move": "Earth Power", "value_low": 63.0, "value_high": 63.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Giraffe", "target": "Chi-Yu", "move": "Thunderbolt", "value_low": 61.0, "value_high": 61.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526480875"}, {"actor": "Landorus", "target": "Giraffe", "move": "Sludge Bomb", "value_low": 56.0, "value_high": 56.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526480875"}, {"actor": "Chi-Yu", "target": "TornWithoutOgre", "move": "Heat Wave", "value_low": 50.0, "value_high": 50.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526480875"}, {"actor": "Chi-Yu", "target": "Giraffe", "move": "Heat Wave", "value_low": 22.0, "value_high": 22.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526480875"}, {"actor": "TornWithoutOgre", "target": "Chi-Yu", "move": "Bleakwind Storm", "value_low": 38.0, "value_high": 38.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526480875"}, {"actor": "Giraffe", "target": "Landorus", "move": "Dragon Pulse", "value_low": 89.0, "value_high": 89.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526480875"}, {"actor": "Chi-Yu", "target": "Does not care", "move": "Heat Wave", "value_low": 87.0, "value_high": 87.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526480875"}, {"actor": "Chi-Yu", "target": "Eddie bear", "move": "Heat Wave", "value_low": 52.0, "value_high": 52.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526480875"}, {"actor": "Eddie bear", "target": "Clefairy", "move": "Earthquake", "value_low": 50.0, "value_high": 50.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526480875"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Earthquake", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526480875"}, {"actor": "Does not care", "target": "Flutter Mane", "move": "Sucker Punch", "value_low": 25.0, "value_high": 25.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526480875"}, {"actor": "The stupid cat", "target": "Gholdengo", "move": "Flare Blitz", "value_low": 91.0, "value_high": 91.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "The stupid cat", "target": "stupid cat", "move": "Flare Blitz", "value_low": 28.0, "value_high": 28.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "Flutter Mane", "target": "healing moon", "move": "Moonblast", "value_low": 22.0, "value_high": 22.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "Eddie bear", "target": "Flutter Mane", "move": "Earthquake", "value_low": 74.0, "value_high": 74.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Earthquake", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "Flutter Mane", "target": "Giraffe", "move": "Moonblast", "value_low": 77.0, "value_high": 77.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "The stupid cat", "target": "stupid cat", "move": "Flare Blitz", "value_low": 7.0, "value_high": 7.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "Ogerpon", "target": "Eddie bear", "move": "Ivy Cudgel", "value_low": 72.0, "value_high": 72.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526468176"}, {"actor": "Flutter Mane", "target": "TornWithoutOgre", "move": "Icy Wind", "value_low": 25.0, "value_high": 25.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "Does not care", "move": "Icy Wind", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Does not care", "target": "Gholdengo", "move": "Wicked Blow", "value_low": 60.0, "value_high": 60.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "TornWithoutOgre", "move": "Icy Wind", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "Does not care", "move": "Icy Wind", "value_low": 20.0, "value_high": 20.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "TornWithoutOgre", "target": "Flutter Mane", "move": "Bleakwind Storm", "value_low": 28.0, "value_high": 28.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "TornWithoutOgre", "target": "Landorus", "move": "Bleakwind Storm", "value_low": 40.0, "value_high": 40.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "TornWithoutOgre", "move": "Icy Wind", "value_low": 24.0, "value_high": 24.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Does not care", "target": "Landorus", "move": "Sucker Punch", "value_low": 43.0, "value_high": 43.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "TornWithoutOgre", "move": "Icy Wind", "value_low": 22.0, "value_high": 22.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "Does not care", "move": "Icy Wind", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "Giraffe", "move": "Icy Wind", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Flutter Mane", "target": "stupid cat", "move": "Moonblast", "value_low": 31.0, "value_high": 31.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526469217"}, {"actor": "Giraffe", "target": "Zapdos", "move": "Thunderclap", "value_low": 97.0, "value_high": 97.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "Zapdos", "target": "TornWithoutOgre", "move": "U-turn", "value_low": 18.0, "value_high": 18.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "Flutter Mane", "target": "Giraffe", "move": "Moonblast", "value_low": 98.0, "value_high": 98.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "TornWithoutOgre", "target": "Landorus", "move": "Bleakwind Storm", "value_low": 36.0, "value_high": 36.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "Flutter Mane", "target": "TornWithoutOgre", "move": "Shadow Ball", "value_low": 38.0, "value_high": 38.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "Giraffe", "target": "Landorus", "move": "Dragon Pulse", "value_low": 59.0, "value_high": 59.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "Does not care", "target": "Flutter Mane", "move": "Wicked Blow", "value_low": 56.0, "value_high": 56.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "TornWithoutOgre", "target": "Amoonguss", "move": "Bleakwind Storm", "value_low": 54.0, "value_high": 54.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "TornWithoutOgre", "target": "Flutter Mane", "move": "Bleakwind Storm", "value_low": 33.0, "value_high": 33.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "TornWithoutOgre", "target": "Amoonguss", "move": "Bleakwind Storm", "value_low": 33.0, "value_high": 33.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "Zapdos", "target": "Does not care", "move": "Brave Bird", "value_low": 70.0, "value_high": 70.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526470454"}, {"actor": "Does not care", "target": "Flutter Mane", "move": "Wicked Blow", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "Amoonguss", "target": "Does not care", "move": "Pollen Puff", "value_low": 13.0, "value_high": 13.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "TornWithoutOgre", "target": "Rillaboom", "move": "Bleakwind Storm", "value_low": 43.99999999999999, "value_high": 43.99999999999999, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "TornWithoutOgre", "target": "Landorus", "move": "Bleakwind Storm", "value_low": 40.0, "value_high": 40.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "Landorus", "target": "TornWithoutOgre", "move": "Sludge Bomb", "value_low": 55.0, "value_high": 55.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "TornWithoutOgre", "target": "Amoonguss", "move": "Bleakwind Storm", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "Landorus", "target": "Eddie bear", "move": "Sludge Bomb", "value_low": 0.0, "value_high": 0.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "Rillaboom", "target": "Rillaboom", "move": "Wood Hammer", "value_low": 30.0, "value_high": 30.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526471909"}, {"actor": "Flutter Mane", "target": "Does not care", "move": "Moonblast", "value_low": 32.0, "value_high": 32.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "Does not care", "target": "Amoonguss", "move": "Wicked Blow", "value_low": 47.0, "value_high": 47.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "TornWithoutOgre", "target": "Flutter Mane", "move": "Bleakwind Storm", "value_low": 33.0, "value_high": 33.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "Landorus", "target": "TornWithoutOgre", "move": "Sludge Bomb", "value_low": 81.0, "value_high": 81.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "Rillaboom", "target": "Eddie bear", "move": "Fake Out", "value_low": 10.0, "value_high": 10.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "TornWithoutOgre", "target": "Landorus", "move": "Bleakwind Storm", "value_low": 36.0, "value_high": 36.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "TornWithoutOgre", "target": "Rillaboom", "move": "Bleakwind Storm", "value_low": 44.99999999999999, "value_high": 44.99999999999999, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "Rillaboom", "target": "Eddie bear", "move": "Grassy Glide", "value_low": 49.0, "value_high": 49.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "Does not care", "target": "Rillaboom", "move": "Wicked Blow", "value_low": 51.00000000000001, "value_high": 51.00000000000001, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Headlong Rush", "value_low": 0.0, "value_high": 0.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526473208"}, {"actor": "Does not care", "target": "Clefairy", "move": "Wicked Blow", "value_low": 22.0, "value_high": 22.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "The healing moon", "target": "Regidrago", "move": "Dazzling Gleam", "value_low": 22.0, "value_high": 22.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "Regidrago", "target": "Eddie bear", "move": "Dragon Energy", "value_low": 85.0, "value_high": 85.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "Regidrago", "target": "Eddie bear", "move": "Dragon Energy", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "The healing moon", "target": "Regidrago", "move": "Dazzling Gleam", "value_low": 25.0, "value_high": 25.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "Regidrago", "target": "Does not care", "move": "Dragon Energy", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "Does not care", "target": "Chi-Yu", "move": "Close Combat", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "Chi-Yu", "target": "healing moon", "move": "Snarl", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "The healing moon", "target": "Regidrago", "move": "Dazzling Gleam", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526478726"}, {"actor": "Flutter Mane", "target": "healing moon", "move": "Shadow Ball", "value_low": 37.0, "value_high": 37.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Landorus", "target": "healing moon", "move": "Sludge Bomb", "value_low": 24.0, "value_high": 24.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Does not care", "target": "Clefairy", "move": "Wicked Blow", "value_low": 31.0, "value_high": 31.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Flutter Mane", "target": "healing moon", "move": "Dazzling Gleam", "value_low": 17.0, "value_high": 17.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Flutter Mane", "target": "Does not care", "move": "Dazzling Gleam", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Flutter Mane", "target": "healing moon", "move": "Dazzling Gleam", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Does not care", "target": "Flutter Mane", "move": "Sucker Punch", "value_low": 36.0, "value_high": 36.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Giraffe", "target": "Flutter Mane", "move": "Thunderclap", "value_low": 28.0, "value_high": 28.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Flutter Mane", "target": "Eddie bear", "move": "Dazzling Gleam", "value_low": 30.0, "value_high": 30.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Flutter Mane", "target": "Giraffe", "move": "Dazzling Gleam", "value_low": 25.0, "value_high": 25.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Eddie bear", "target": "Giraffe", "move": "Earthquake", "value_low": 39.0, "value_high": 39.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Eddie bear", "target": "Clefairy", "move": "Earthquake", "value_low": 34.0, "value_high": 34.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "Landorus", "target": "Eddie bear", "move": "Earth Power", "value_low": 63.0, "value_high": 63.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526479779"}, {"actor": "TornWithoutOgre", "target": "Mimikyu", "move": "Bleakwind Storm", "value_low": 0.0, "value_high": 0.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "TornWithoutOgre", "target": "Okidogi", "move": "Bleakwind Storm", "value_low": 23.0, "value_high": 23.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "TornWithoutOgre", "target": "Mimikyu", "move": "Bleakwind Storm", "value_low": 12.0, "value_high": 12.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Does not care", "target": "Mimikyu", "move": "Wicked Blow", "value_low": 56.0, "value_high": 56.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Okidogi", "target": "TornWithoutOgre", "move": "Ice Punch", "value_low": 84.0, "value_high": 84.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Mimikyu", "target": "Does not care", "move": "Play Rough", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "TornWithoutOgre", "target": "Okidogi", "move": "Bleakwind Storm", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Okidogi", "target": "healing moon", "move": "Poison Jab", "value_low": 29.0, "value_high": 29.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Okidogi", "target": "healing moon", "move": "Poison Jab", "value_low": 29.0, "value_high": 29.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Ursaluna", "target": "healing moon", "move": "Moonblast", "value_low": 27.0, "value_high": 27.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Ursaluna", "target": "Ursaluna", "move": "Moonblast", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Ursaluna", "target": "healing moon", "move": "Moonblast", "value_low": 12.0, "value_high": 12.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Eddie bear", "target": "Ursaluna", "move": "Facade", "value_low": 37.0, "value_high": 37.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Ursaluna", "target": "Eddie bear", "move": "Blood Moon", "value_low": 92.0, "value_high": 92.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Ursaluna", "target": "Ursaluna", "move": "Blood Moon", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Does not care", "target": "Flutter Mane", "move": "Wicked Blow", "value_low": 89.0, "value_high": 89.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "Landorus", "target": "healing moon", "move": "Sludge Bomb", "value_low": 25.0, "value_high": 25.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "The healing moon", "target": "Landorus", "move": "Dazzling Gleam", "value_low": 13.0, "value_high": 13.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "Does not care", "target": "Landorus", "move": "Wicked Blow", "value_low": 67.0, "value_high": 67.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "Urshifu", "target": "Does not care", "move": "Close Combat", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "The healing moon", "target": "Urshifu", "move": "Dazzling Gleam", "value_low": 40.0, "value_high": 40.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "The healing moon", "target": "Landorus", "move": "Dazzling Gleam", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "Does not care", "target": "Urshifu", "move": "Sucker Punch", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "The healing moon", "target": "Rillaboom", "move": "Dazzling Gleam", "value_low": 11.0, "value_high": 11.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "Rillaboom", "target": "healing moon", "move": "Fake Out", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "Flutter Mane", "target": "Does not care", "move": "Moonblast", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Chien-Pao", "target": "stupid cat", "move": "Sacred Sword", "value_low": 56.0, "value_high": 56.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "The stupid cat", "target": "Chien-Pao", "move": "Knock Off", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Rillaboom", "target": "stupid cat", "move": "High Horsepower", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Giraffe", "target": "Rillaboom", "move": "Dragon Pulse", "value_low": 48.0, "value_high": 48.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Giraffe", "target": "Giraffe", "move": "Dragon Pulse", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "The stupid cat", "target": "stupid cat", "move": "Flare Blitz", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Giraffe", "target": "Giraffe", "move": "Thunderclap", "value_low": 4.0, "value_high": 4.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Chien-Pao", "target": "Giraffe", "move": "Sucker Punch", "value_low": 13.0, "value_high": 13.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Does not care", "target": "Mimikyu", "move": "Wicked Blow", "value_low": 0.0, "value_high": 0.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526499966"}, {"actor": "Does not care", "target": "Mimikyu", "move": "Wicked Blow", "value_low": 12.0, "value_high": 12.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526499966"}, {"actor": "Okidogi", "target": "Does not care", "move": "Drain Punch", "value_low": 85.0, "value_high": 85.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526499966"}, {"actor": "The healing moon", "target": "Mimikyu", "move": "Dazzling Gleam", "value_low": 12.0, "value_high": 12.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526499966"}, {"actor": "The healing moon", "target": "Okidogi", "move": "Dazzling Gleam", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526499966"}, {"actor": "Okidogi", "target": "TornWithoutOgre", "move": "Drain Punch", "value_low": 52.0, "value_high": 52.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526499966"}, {"actor": "Mimikyu", "target": "healing moon", "move": "Shadow Claw", "value_low": 29.0, "value_high": 29.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526499966"}, {"actor": "Mimikyu", "target": "healing moon", "move": "Shadow Claw", "value_low": 30.0, "value_high": 30.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526499966"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526499966"}, {"actor": "Okidogi", "target": "Eddie bear", "move": "Poison Jab", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526499966"}, {"actor": "TornWithoutOgre", "target": "Mimikyu", "move": "Bleakwind Storm", "value_low": 0.0, "value_high": 0.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "TornWithoutOgre", "target": "Okidogi", "move": "Bleakwind Storm", "value_low": 23.0, "value_high": 23.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "TornWithoutOgre", "target": "Mimikyu", "move": "Bleakwind Storm", "value_low": 12.0, "value_high": 12.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Does not care", "target": "Mimikyu", "move": "Wicked Blow", "value_low": 56.0, "value_high": 56.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Okidogi", "target": "TornWithoutOgre", "move": "Ice Punch", "value_low": 84.0, "value_high": 84.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Mimikyu", "target": "Does not care", "move": "Play Rough", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "TornWithoutOgre", "target": "Okidogi", "move": "Bleakwind Storm", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Okidogi", "target": "healing moon", "move": "Poison Jab", "value_low": 29.0, "value_high": 29.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Okidogi", "target": "healing moon", "move": "Poison Jab", "value_low": 29.0, "value_high": 29.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Ursaluna", "target": "healing moon", "move": "Moonblast", "value_low": 27.0, "value_high": 27.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Ursaluna", "target": "Ursaluna", "move": "Moonblast", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Ursaluna", "target": "healing moon", "move": "Moonblast", "value_low": 12.0, "value_high": 12.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Eddie bear", "target": "Ursaluna", "move": "Facade", "value_low": 37.0, "value_high": 37.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Ursaluna", "target": "Eddie bear", "move": "Blood Moon", "value_low": 92.0, "value_high": 92.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Ursaluna", "target": "Ursaluna", "move": "Blood Moon", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526501754"}, {"actor": "Does not care", "target": "Flutter Mane", "move": "Wicked Blow", "value_low": 89.0, "value_high": 89.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "Landorus", "target": "healing moon", "move": "Sludge Bomb", "value_low": 25.0, "value_high": 25.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "The healing moon", "target": "Landorus", "move": "Dazzling Gleam", "value_low": 13.0, "value_high": 13.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "Does not care", "target": "Landorus", "move": "Wicked Blow", "value_low": 67.0, "value_high": 67.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "Urshifu", "target": "Does not care", "move": "Close Combat", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "The healing moon", "target": "Urshifu", "move": "Dazzling Gleam", "value_low": 40.0, "value_high": 40.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "The healing moon", "target": "Landorus", "move": "Dazzling Gleam", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "Does not care", "target": "Urshifu", "move": "Sucker Punch", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "The healing moon", "target": "Rillaboom", "move": "Dazzling Gleam", "value_low": 11.0, "value_high": 11.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "Rillaboom", "target": "healing moon", "move": "Fake Out", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526532558"}, {"actor": "Flutter Mane", "target": "Does not care", "move": "Moonblast", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Chien-Pao", "target": "stupid cat", "move": "Sacred Sword", "value_low": 56.0, "value_high": 56.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "The stupid cat", "target": "Chien-Pao", "move": "Knock Off", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Rillaboom", "target": "stupid cat", "move": "High Horsepower", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Giraffe", "target": "Rillaboom", "move": "Dragon Pulse", "value_low": 48.0, "value_high": 48.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Giraffe", "target": "Giraffe", "move": "Dragon Pulse", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "The stupid cat", "target": "stupid cat", "move": "Flare Blitz", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Giraffe", "target": "Giraffe", "move": "Thunderclap", "value_low": 4.0, "value_high": 4.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Chien-Pao", "target": "Giraffe", "move": "Sucker Punch", "value_low": 13.0, "value_high": 13.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Flutter Mane", "target": "Does not care", "move": "Moonblast", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Chien-Pao", "target": "stupid cat", "move": "Sacred Sword", "value_low": 56.0, "value_high": 56.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "The stupid cat", "target": "Chien-Pao", "move": "Knock Off", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Rillaboom", "target": "stupid cat", "move": "High Horsepower", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Giraffe", "target": "Rillaboom", "move": "Dragon Pulse", "value_low": 48.0, "value_high": 48.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Giraffe", "target": "Giraffe", "move": "Dragon Pulse", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "The stupid cat", "target": "stupid cat", "move": "Flare Blitz", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Giraffe", "target": "Giraffe", "move": "Thunderclap", "value_low": 4.0, "value_high": 4.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Chien-Pao", "target": "Giraffe", "move": "Sucker Punch", "value_low": 13.0, "value_high": 13.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Flutter Mane", "target": "Does not care", "move": "Moonblast", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Chien-Pao", "target": "stupid cat", "move": "Sacred Sword", "value_low": 56.0, "value_high": 56.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "The stupid cat", "target": "Chien-Pao", "move": "Knock Off", "value_low": 99.0, "value_high": 99.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Rillaboom", "target": "stupid cat", "move": "High Horsepower", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Giraffe", "target": "Rillaboom", "move": "Dragon Pulse", "value_low": 48.0, "value_high": 48.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Giraffe", "target": "Giraffe", "move": "Dragon Pulse", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "The stupid cat", "target": "stupid cat", "move": "Flare Blitz", "value_low": 15.0, "value_high": 15.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Giraffe", "target": "Giraffe", "move": "Thunderclap", "value_low": 4.0, "value_high": 4.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Chien-Pao", "target": "Giraffe", "move": "Sucker Punch", "value_low": 13.0, "value_high": 13.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2526534330"}, {"actor": "Iron Hands", "target": "Does not care", "move": "Fake Out", "value_low": 16.0, "value_high": 16.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Ninetales", "target": "Eddie bear", "move": "Blizzard", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Eddie bear", "target": "Ninetales", "move": "Earthquake", "value_low": 43.00000000000001, "value_high": 43.00000000000001, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Eddie bear", "target": "Iron Hands", "move": "Earthquake", "value_low": 61.0, "value_high": 61.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Iron Hands", "target": "Eddie bear", "move": "Drain Punch", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Does not care", "target": "Ninetales", "move": "Sucker Punch", "value_low": 7.999999999999993, "value_high": 7.999999999999993, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Eddie bear", "target": "Ninetales", "move": "Earthquake", "value_low": 29.0, "value_high": 29.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Earthquake", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Landorus", "target": "healing moon", "move": "U-turn", "value_low": 37.0, "value_high": 37.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "The healing moon", "target": "Eddie bear", "move": "Trick Room", "value_low": 5.999999999999993, "value_high": 5.999999999999993, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Iron Hands", "target": "healing moon", "move": "Fake Out", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Annihilape", "target": "Eddie bear", "move": "Rage Fist", "value_low": 31.000000000000007, "value_high": 31.000000000000007, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Annihilape", "target": "Eddie bear", "move": "Rage Fist", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Eddie bear", "target": "Annihilape", "move": "Headlong Rush", "value_low": 33.0, "value_high": 33.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Giraffe", "target": "Landorus", "move": "Dragon Pulse", "value_low": 84.0, "value_high": 84.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Giraffe", "target": "Giraffe", "move": "Dragon Pulse", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Annihilape", "target": "healing moon", "move": "Rage Fist", "value_low": 37.0, "value_high": 37.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Giraffe", "target": "Annihilape", "move": "Thunderbolt", "value_low": 22.0, "value_high": 22.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Giraffe", "target": "Giraffe", "move": "Thunderbolt", "value_low": 10.0, "value_high": 10.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Annihilape", "target": "Giraffe", "move": "Rage Fist", "value_low": 51.0, "value_high": 51.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 20.0, "value_high": 20.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Ninetales", "move": "Facade", "value_low": 82.0, "value_high": 82.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Amoonguss", "move": "Facade", "value_low": 50.0, "value_high": 50.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 16.000000000000007, "value_high": 16.000000000000007, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 5.999999999999993, "value_high": 5.999999999999993, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "TornWithoutOgre", "target": "Eddie bear", "move": "Sunny Day", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Annihilape", "target": "Eddie bear", "move": "Bulk Up", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Amoonguss", "move": "Facade", "value_low": 36.0, "value_high": 36.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 16.0, "value_high": 16.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Annihilape", "target": "Eddie bear", "move": "Bulk Up", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "TornWithoutOgre", "target": "Landorus", "move": "Bleakwind Storm", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "TornWithoutOgre", "target": "Annihilape", "move": "Bleakwind Storm", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Landorus", "move": "Facade", "value_low": 38.0, "value_high": 38.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Annihilape", "target": "Eddie bear", "move": "Bulk Up", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "TornWithoutOgre", "target": "Landorus", "move": "Bleakwind Storm", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "TornWithoutOgre", "target": "Annihilape", "move": "Bleakwind Storm", "value_low": 22.0, "value_high": 22.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Landorus", "target": "TornWithoutOgre", "move": "Rock Slide", "value_low": 61.0, "value_high": 61.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Does not care", "target": "Amoonguss", "move": "Wicked Blow", "value_low": 55.0, "value_high": 55.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Does not care", "target": "Does not care", "move": "Wicked Blow", "value_low": 16.0, "value_high": 16.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Giraffe", "target": "Giraffe", "move": "Dragon Pulse", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Does not care", "target": "Annihilape", "move": "Wicked Blow", "value_low": 16.0, "value_high": 16.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Iron Hands", "target": "Does not care", "move": "Fake Out", "value_low": 16.0, "value_high": 16.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Ninetales", "target": "Eddie bear", "move": "Blizzard", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Eddie bear", "target": "Ninetales", "move": "Earthquake", "value_low": 43.00000000000001, "value_high": 43.00000000000001, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Eddie bear", "target": "Iron Hands", "move": "Earthquake", "value_low": 61.0, "value_high": 61.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Iron Hands", "target": "Eddie bear", "move": "Drain Punch", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Does not care", "target": "Ninetales", "move": "Sucker Punch", "value_low": 7.999999999999993, "value_high": 7.999999999999993, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Eddie bear", "target": "Ninetales", "move": "Earthquake", "value_low": 29.0, "value_high": 29.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Earthquake", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Landorus", "target": "healing moon", "move": "U-turn", "value_low": 37.0, "value_high": 37.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "The healing moon", "target": "Eddie bear", "move": "Trick Room", "value_low": 5.999999999999993, "value_high": 5.999999999999993, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Iron Hands", "target": "healing moon", "move": "Fake Out", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Annihilape", "target": "Eddie bear", "move": "Rage Fist", "value_low": 31.000000000000007, "value_high": 31.000000000000007, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Annihilape", "target": "Eddie bear", "move": "Rage Fist", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Eddie bear", "target": "Annihilape", "move": "Headlong Rush", "value_low": 33.0, "value_high": 33.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Giraffe", "target": "Landorus", "move": "Dragon Pulse", "value_low": 84.0, "value_high": 84.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Giraffe", "target": "Giraffe", "move": "Dragon Pulse", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Annihilape", "target": "healing moon", "move": "Rage Fist", "value_low": 37.0, "value_high": 37.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Giraffe", "target": "Annihilape", "move": "Thunderbolt", "value_low": 22.0, "value_high": 22.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Giraffe", "target": "Giraffe", "move": "Thunderbolt", "value_low": 10.0, "value_high": 10.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Annihilape", "target": "Giraffe", "move": "Rage Fist", "value_low": 51.0, "value_high": 51.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527127051"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 20.0, "value_high": 20.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Ninetales", "move": "Facade", "value_low": 82.0, "value_high": 82.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Amoonguss", "move": "Facade", "value_low": 50.0, "value_high": 50.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 16.000000000000007, "value_high": 16.000000000000007, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 5.999999999999993, "value_high": 5.999999999999993, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "TornWithoutOgre", "target": "Eddie bear", "move": "Sunny Day", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Landorus", "target": "Eddie bear", "move": "U-turn", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Annihilape", "target": "Eddie bear", "move": "Bulk Up", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Amoonguss", "move": "Facade", "value_low": 36.0, "value_high": 36.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Eddie bear", "move": "Facade", "value_low": 16.0, "value_high": 16.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Annihilape", "target": "Eddie bear", "move": "Bulk Up", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "TornWithoutOgre", "target": "Landorus", "move": "Bleakwind Storm", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "TornWithoutOgre", "target": "Annihilape", "move": "Bleakwind Storm", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Eddie bear", "target": "Landorus", "move": "Facade", "value_low": 38.0, "value_high": 38.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Annihilape", "target": "Eddie bear", "move": "Bulk Up", "value_low": 6.0, "value_high": 6.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "TornWithoutOgre", "target": "Landorus", "move": "Bleakwind Storm", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "TornWithoutOgre", "target": "Annihilape", "move": "Bleakwind Storm", "value_low": 22.0, "value_high": 22.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Landorus", "target": "TornWithoutOgre", "move": "Rock Slide", "value_low": 61.0, "value_high": 61.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Does not care", "target": "Amoonguss", "move": "Wicked Blow", "value_low": 55.0, "value_high": 55.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Does not care", "target": "Does not care", "move": "Wicked Blow", "value_low": 16.0, "value_high": 16.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Giraffe", "target": "Giraffe", "move": "Dragon Pulse", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}, {"actor": "Does not care", "target": "Annihilape", "move": "Wicked Blow", "value_low": 16.0, "value_high": 16.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regfbo3-2527128534"}]</script>
+    <script type="application/json" id="damage-rows-data">[]</script>
+    <script type="application/json" id="rating-history-data">[]</script>
     <script>
         const damageRows = JSON.parse(document.getElementById('damage-rows-data')?.textContent || '[]');
+        const ratingHistory = JSON.parse(document.getElementById('rating-history-data')?.textContent || '[]');
         const attackerSelect = document.getElementById('attacker-select');
         const defenderSelect = document.getElementById('defender-select');
         const output = document.getElementById('damage-output');
+        const ratingWrapper = document.getElementById('rating-wrapper');
+        const ratingCard = document.getElementById('rating-card');
+        const ratingChart = document.getElementById('rating-chart');
+        const ratingCanvas = document.getElementById('rating-canvas');
+        const ratingElo = document.getElementById('rating-elo');
+        const ratingFormat = document.getElementById('rating-format');
+        const ratingChartEmpty = document.getElementById('rating-chart-empty');
+        const ratingChartRange = document.getElementById('rating-chart-range');
 
         const normalize = (value) => (value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
         const isFiniteNumber = (value) => Number.isFinite(value);
@@ -948,6 +203,7 @@
                         move,
                         min_low: null,
                         max_high: null,
+                        sum_mid: 0,
                         count: 0,
                         replay_url: row.replay_url || ''
                     };
@@ -964,11 +220,19 @@
                         ? Math.max(entry.max_high, row.value_high)
                         : row.value_high;
                 }
+                if (isFiniteNumber(row.value_low) && isFiniteNumber(row.value_high)) {
+                    entry.sum_mid += (row.value_low + row.value_high) / 2;
+                }
                 if (!entry.replay_url && row.replay_url) {
                     entry.replay_url = row.replay_url;
                 }
             });
-            return Object.values(buckets).sort((a, b) => b.max_high - a.max_high);
+            return Object.values(buckets)
+                .map((entry) => ({
+                    ...entry,
+                    avg: entry.count ? (entry.sum_mid / entry.count) : null
+                }))
+                .sort((a, b) => (b.max_high || 0) - (a.max_high || 0));
         };
 
         const renderList = (title, items) => {
@@ -990,6 +254,7 @@
                         <div>
                             <strong>${item.move}</strong>
                             <span>${formatPercent(item.min_low)} - ${formatPercent(item.max_high)}</span>
+                            <span>Avg ${formatPercent(item.avg)}</span>
                             <span class="muted">${item.count} hits</span>
                         </div>
                         <div class="list-actions">
@@ -1011,6 +276,9 @@
         };
 
         const update = () => {
+            if (!attackerSelect || !defenderSelect || !output) {
+                return;
+            }
             const attacker = attackerSelect.value;
             const defender = defenderSelect.value;
             if (!attacker || !defender) {
@@ -1026,6 +294,134 @@
 
         attackerSelect?.addEventListener('change', update);
         defenderSelect?.addEventListener('change', update);
+
+        const drawRatingChart = (points) => {
+            if (!ratingCanvas) {
+                return;
+            }
+            const ctx = ratingCanvas.getContext('2d');
+            if (!ctx) {
+                return;
+            }
+
+            const width = ratingCanvas.width;
+            const height = ratingCanvas.height;
+            const padding = { top: 12, right: 10, bottom: 18, left: 34 };
+            const minElo = Math.min(...points.map((point) => Number(point.elo)));
+            const maxElo = Math.max(...points.map((point) => Number(point.elo)));
+            const range = Math.max(maxElo - minElo, 1);
+
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 3; i += 1) {
+                const y = padding.top + ((height - padding.top - padding.bottom) * i / 3);
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(width - padding.right, y);
+                ctx.stroke();
+            }
+
+            const xStep = points.length > 1
+                ? (width - padding.left - padding.right) / (points.length - 1)
+                : 0;
+            const toY = (elo) => {
+                const normalized = (Number(elo) - minElo) / range;
+                return height - padding.bottom - normalized * (height - padding.top - padding.bottom);
+            };
+
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            points.forEach((point, index) => {
+                const x = padding.left + index * xStep;
+                const y = toY(point.elo);
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+
+            ctx.fillStyle = '#93c5fd';
+            points.forEach((point, index) => {
+                const x = padding.left + index * xStep;
+                const y = toY(point.elo);
+                ctx.beginPath();
+                ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = '10px system-ui, -apple-system, Segoe UI, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(`${minElo}`, 4, height - padding.bottom + 3);
+            ctx.fillText(`${maxElo}`, 4, padding.top + 3);
+        };
+
+        const initRatingCard = () => {
+            if (!ratingElo || !ratingFormat || !ratingCard || !ratingChart) {
+                return;
+            }
+            if (!ratingHistory.length) {
+                ratingElo.textContent = '—';
+                ratingFormat.textContent = 'Nog geen data';
+                ratingCard.setAttribute('aria-expanded', 'false');
+                return;
+            }
+
+            const latest = ratingHistory[ratingHistory.length - 1];
+            ratingElo.textContent = `${latest.elo}`;
+            ratingFormat.textContent = latest.format || 'Onbekend format';
+
+            if (ratingChartRange) {
+                const first = ratingHistory[0];
+                ratingChartRange.textContent = `${first.elo} → ${latest.elo}`;
+            }
+
+            if (ratingHistory.length < 2) {
+                if (ratingChartEmpty) {
+                    ratingChartEmpty.hidden = false;
+                    ratingChartEmpty.textContent = 'Minimaal 2 punten nodig voor een graph.';
+                }
+            } else {
+                drawRatingChart(ratingHistory);
+                if (ratingChartEmpty) {
+                    ratingChartEmpty.hidden = true;
+                }
+            }
+
+            const toggleChart = () => {
+                const nextState = ratingChart.hasAttribute('hidden');
+                if (nextState) {
+                    ratingChart.removeAttribute('hidden');
+                } else {
+                    ratingChart.setAttribute('hidden', '');
+                }
+                ratingCard.setAttribute('aria-expanded', String(nextState));
+            };
+
+            ratingCard.addEventListener('click', toggleChart);
+            ratingCard.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    toggleChart();
+                }
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!ratingWrapper?.contains(event.target)) {
+                    ratingChart.setAttribute('hidden', '');
+                    ratingCard.setAttribute('aria-expanded', 'false');
+                }
+            });
+        };
+
+        initRatingCard();
     </script>
 </body>
 </html>

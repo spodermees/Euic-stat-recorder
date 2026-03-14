@@ -81,6 +81,9 @@ For the desktop app, you can point the watcher to a folder and it will follow th
 
 6) Open a Showdown battle. The extension streams lines automatically.
 
+You can toggle this behavior with **Auto-track live battlelog** (in popup) or
+**Automatisch battlelog volgen op Showdown** (in extension options).
+
 When the extension starts (or when you enable streaming in extension settings), it also sends a wake ping to:
 
 `/api/poke`
