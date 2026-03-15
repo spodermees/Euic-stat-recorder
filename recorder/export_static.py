@@ -8,7 +8,14 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from app import DB_PATH, MY_POKEMON_PRESET, PREP_SECTIONS, app as flask_app, build_team_pokemon_insights
+from app import (
+    DB_PATH,
+    MY_POKEMON_PRESET,
+    PREP_SECTIONS,
+    app as flask_app,
+    build_damage_select_options,
+    build_team_pokemon_insights,
+)
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "templates"
@@ -168,10 +175,10 @@ def _build_export_context(
         }
     )
 
-    attacker_options = MY_POKEMON_PRESET
-    opponent_options = [name for name in unique_names if name not in MY_POKEMON_PRESET]
-    if not opponent_options:
-        opponent_options = unique_names
+    attacker_options, opponent_options = build_damage_select_options(
+        [dict(row) for row in team_pokemon],
+        unique_names,
+    )
 
     prep_notes_rows = fetch_rows(
         db,

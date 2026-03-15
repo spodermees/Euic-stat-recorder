@@ -978,6 +978,49 @@ def _team_entry_aliases(team_id: int) -> list[str]:
     return [name for name in aliases if name]
 
 
+def build_damage_select_options(team_entries: Iterable[dict], unique_names: Iterable[str]) -> tuple[list[str], list[str]]:
+    names_in_logs: list[str] = []
+    seen_log_names: set[str] = set()
+    for raw_name in unique_names:
+        name = str(raw_name or "").strip()
+        normalized = normalize_name(name)
+        if not name or not normalized or normalized in seen_log_names:
+            continue
+        names_in_logs.append(name)
+        seen_log_names.add(normalized)
+
+    alias_names: list[str] = []
+    alias_norms: set[str] = set()
+    for entry in team_entries:
+        for field in ("nickname", "species"):
+            name = str(entry.get(field) or "").strip()
+            normalized = normalize_name(name)
+            if not name or not normalized or normalized in alias_norms:
+                continue
+            alias_names.append(name)
+            alias_norms.add(normalized)
+
+    mine_options = [name for name in names_in_logs if normalize_name(name) in alias_norms]
+    if not mine_options and alias_norms:
+        mine_options = [
+            name
+            for name in names_in_logs
+            if any(
+                normalize_name(name) in alias_norm or alias_norm in normalize_name(name)
+                for alias_norm in alias_norms
+            )
+        ]
+    if not mine_options:
+        mine_options = alias_names or [name for name in MY_POKEMON_PRESET if str(name).strip()]
+
+    mine_norms = {normalize_name(name) for name in mine_options if normalize_name(name)}
+    opponent_options = [name for name in names_in_logs if normalize_name(name) not in mine_norms]
+    if not opponent_options:
+        opponent_options = names_in_logs
+
+    return mine_options, opponent_options
+
+
 def build_team_pokemon_insights(team_id: int) -> dict:
     db = get_db()
     my_aliases = _team_entry_aliases(team_id)
@@ -1594,10 +1637,7 @@ def index():
             "reverse": reverse,
         }
 
-    attacker_options = MY_POKEMON_PRESET
-    opponent_options = [name for name in unique_names if name not in MY_POKEMON_PRESET]
-    if not opponent_options:
-        opponent_options = unique_names
+    attacker_options, opponent_options = build_damage_select_options(team_pokemon, unique_names)
 
     return render_template(
         "index.html",

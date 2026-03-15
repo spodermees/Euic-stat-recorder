@@ -45,7 +45,7 @@
         
         <div class="stat">
             <span>Total events</span>
-            <strong>0</strong>
+            <strong>20</strong>
         </div>
         <div class="rating-wrapper" id="rating-wrapper">
             <div class="rating rating-clickable" id="rating-card" aria-live="polite" role="button" tabindex="0" aria-expanded="false">
@@ -69,14 +69,403 @@
         <section class="card">
             <h2 class="title-with-icon"><span class="poke-icon poke-icon-star" aria-hidden="true"></span>Overall damage (all matches)</h2>
             
-                <p>No damage data yet. Export again when there is data.</p>
+                <div class="summary">
+                    <span class="chip damage">Min 7.0%</span>
+                    <span class="chip damage">Max 92.0%</span>
+                    <span class="chip">Avg 39.1%</span>
+                    <span class="muted">20 hits</span>
+                </div>
+
+                <form class="form-grid" id="damage-form" style="margin-top:16px;">
+                    <label>
+                        Mijn Pokémon
+                        <select name="attacker" id="attacker-select" required>
+                            <option value="" disabled selected>Selecteer mijn Pokémon</option>
+                            
+                                <option value="doesnt care 2">doesnt care 2</option>
+                            
+                                <option value="ogre without torn">ogre without torn</option>
+                            
+                                <option value="ogre&#39;s new friend">ogre&#39;s new friend</option>
+                            
+                        </select>
+                    </label>
+                    <label>
+                        Tegenstander Pokémon
+                        <select name="defender" id="defender-select" required>
+                            <option value="" disabled selected>Selecteer tegenstander</option>
+                            
+                                <option value="Miraidon">Miraidon</option>
+                            
+                                <option value="Ogerpon">Ogerpon</option>
+                            
+                                <option value="Porygon2">Porygon2</option>
+                            
+                                <option value="Torkoal">Torkoal</option>
+                            
+                                <option value="Zacian">Zacian</option>
+                            
+                        </select>
+                    </label>
+                </form>
+
+                <div class="damage-dual" id="damage-output">
+                    <div>
+                        <h3>Mijn Pokémon → Tegenstander</h3>
+                        <p class="muted">Selecteer twee Pokémon om de dmg range te zien.</p>
+                    </div>
+                    <div>
+                        <h3>Tegenstander → Mijn Pokémon</h3>
+                        <p class="muted">Selecteer twee Pokémon om de dmg range te zien.</p>
+                    </div>
+                </div>
             
         </section>
 
         <section class="card">
             <h2 class="title-with-icon"><span class="poke-icon poke-icon-ball" aria-hidden="true"></span>Matches</h2>
             
-                <p>No matches yet.</p>
+                <div class="list">
+                    
+                        <div class="list-item">
+                            <div>
+                                <strong>Replay</strong>
+                                <span>[Gen 9] VGC 2026 Reg I (Bo3) · 2026-03-15T11:20:33</span>
+                                
+                                    <span>? vs spodermees</span>
+                                
+                                <span>Winner: spodermees</span>
+                                
+                            </div>
+                            <div class="list-actions">
+                                
+                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559470897" target="_blank" rel="noreferrer">Replay</a>
+                                
+                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                            </div>
+                        </div>
+                        
+                        
+                            <details class="collapsible" style="margin: 8px 0 12px 0;">
+                                <summary>
+                                    <span class="muted">Log (136 regels)</span>
+                                </summary>
+                                <pre class="log-output" style="margin-top: 10px;">|j|☆mumboclo
+|j|☆spodermees
+|html|&lt;table width=&#34;100%&#34;&gt;&lt;tr&gt;&lt;td align=&#34;left&#34;&gt;mumboclo&lt;/td&gt;&lt;td align=&#34;right&#34;&gt;spodermees&lt;/tr&gt;&lt;tr&gt;&lt;td align=&#34;left&#34;&gt;&lt;i class=&#34;fa fa-circle-o&#34;&gt;&lt;/i&gt; &lt;i class=&#34;fa fa-circle-o&#34;&gt;&lt;/i&gt; &lt;/td&gt;&lt;td align=&#34;right&#34;&gt;&lt;i class=&#34;fa fa-circle-o&#34;&gt;&lt;/i&gt; &lt;i class=&#34;fa fa-circle&#34;&gt;&lt;/i&gt; &lt;/tr&gt;&lt;/table&gt;
+|uhtml|bestof|&lt;h2&gt;&lt;strong&gt;Game 2&lt;/strong&gt; of &lt;a href=&#34;/game-bestof3-gen9vgc2026regibo3-2559469271&#34;&gt;a best-of-3&lt;/a&gt;&lt;/h2&gt;
+|t:|1773573424
+|gametype|doubles
+|player|p1|mumboclo|170|1073
+|player|p2|spodermees|sailor|1000
+|gen|9
+|tier|[Gen 9] VGC 2026 Reg I (Bo3)
+|rated|
+|rule|Species Clause: Limit one of each Pokémon
+|rule|Item Clause: Limit 1 of each item
+|clearpoke
+|poke|p1|Torkoal, L50, F|
+|poke|p1|Zoroark-Hisui, L50, M|
+|poke|p1|Ogerpon-Hearthflame, L50, F|
+|poke|p1|Porygon2, L50|
+|poke|p1|Zacian-*, L50|
+|poke|p1|Miraidon, L50|
+|poke|p2|Kyogre, L50|
+|poke|p2|Calyrex-Ice, L50|
+|poke|p2|Ursaluna-Bloodmoon, L50, M|
+|poke|p2|Raichu, L50, M|
+|poke|p2|Indeedee-F, L50, F|
+|poke|p2|Urshifu-*, L50, F|
+|teampreview|4
+|showteam|p1|Torkoal||Charcoal|Drought|Eruption,EarthPower,Protect,LavaPlume|||F|||50|,,,,,Fire]Zoroark-Hisui||FocusSash|Illusion|BitterMalice,Flamethrower,Uturn,Protect|||M|||50|,,,,,Normal]Ogerpon-Hearthflame||HearthflameMask|MoldBreaker|FollowMe,SpikyShield,IvyCudgel,WoodHammer|||F|||50|,,,,,Fire]Porygon2||Eviolite|Download|Recover,TeraBlast,TrickRoom,ShadowBall||||||50|,,,,,Fighting]Zacian-Crowned||RustedSword|IntrepidSword|behemothblade,CloseCombat,PlayRough,Protect||||||50|,,,,,Fighting]Miraidon||ChoiceSpecs|HadronEngine|Discharge,VoltSwitch,DazzlingGleam,DracoMeteor||||||50|,,,,,Fairy
+|showteam|p2|Kyogre||Leftovers|Drizzle|CalmMind,OriginPulse,Protect,IceBeam||||||50|,,,,,Grass]Calyrex-Ice||ClearAmulet|AsOneGlastrier|TrickRoom,GlacialLance,Protect,HighHorsepower||||||50|,,,,,Fire]Ursaluna-Bloodmoon||LifeOrb|MindsEye|Protect,BloodMoon,HyperVoice,EarthPower|||M|||50|,,,,,Normal]Raichu||AssaultVest|LightningRod|FakeOut,Endeavor,VoltSwitch,Nuzzle|||M|||50|,,,,,Fairy]Indeedee-F||RockyHelmet|PsychicSurge|FollowMe,ShadowBall,TrickRoom,HelpingHand|||F|||50|,,,,,Psychic]Urshifu-Rapid-Strike||FocusSash|UnseenFist|SurgingStrikes,AquaJet,CloseCombat,Detect|||F|||50|,,,,,Water
+|inactive|Battle timer is ON: inactive players will automatically lose when time&#39;s up. (requested by spodermees)
+|inactive|spodermees has 60 seconds left.
+|
+|t:|1773573463
+|teamsize|p1|4
+|teamsize|p2|4
+|start
+|switch|p1a: Miraidon|Miraidon, L50|100/100
+|switch|p1b: Ogerpon|Ogerpon-Hearthflame, L50, F|100/100
+|switch|p2a: doesnt care 2|Urshifu-Rapid-Strike, L50, F|100/100
+|switch|p2b: ogre&#39;s new friend|Raichu, L50, M|100/100
+|-fieldstart|move: Electric Terrain|[from] ability: Hadron Engine|[of] p1a: Miraidon
+|-ability|p1b: Ogerpon|Mold Breaker
+Turn 1: |turn|1
+Turn 1: |inactive|mumboclo has 30 seconds left.
+Turn 1: |inactive|mumboclo has 20 seconds left.
+Turn 1: |inactive|mumboclo has 15 seconds left.
+Turn 1: |inactive|mumboclo has 10 seconds left.
+Turn 1: |inactive|mumboclo has 5 seconds left.
+Turn 1: |
+Turn 1: |t:|1773573513
+Turn 1: |move|p2b: ogre&#39;s new friend|Fake Out|p1b: Ogerpon
+Turn 1: |-damage|p1b: Ogerpon|89/100
+Turn 1: |cant|p1b: Ogerpon|flinch
+Turn 1: |move|p1a: Miraidon|Volt Switch|p2b: ogre&#39;s new friend
+Turn 1: |-activate|p2b: ogre&#39;s new friend|ability: Lightning Rod
+Turn 1: |-ability|p2b: ogre&#39;s new friend|Lightning Rod|boost
+Turn 1: |-boost|p2b: ogre&#39;s new friend|spa|1
+Turn 1: |move|p2a: doesnt care 2|Surging Strikes|p1b: Ogerpon
+Turn 1: |-crit|p1b: Ogerpon
+Turn 1: |-damage|p1b: Ogerpon|63/100
+Turn 1: |-crit|p1b: Ogerpon
+Turn 1: |-damage|p1b: Ogerpon|35/100
+Turn 1: |-crit|p1b: Ogerpon
+Turn 1: |-damage|p1b: Ogerpon|6/100
+Turn 1: |-hitcount|p1b: Ogerpon|3
+Turn 1: |
+Turn 1: |upkeep
+Turn 2: |turn|2
+Turn 2: |
+Turn 2: |t:|1773573534
+Turn 2: |move|p1a: Miraidon|Volt Switch|p2b: ogre&#39;s new friend
+Turn 2: |-activate|p2b: ogre&#39;s new friend|ability: Lightning Rod
+Turn 2: |-ability|p2b: ogre&#39;s new friend|Lightning Rod|boost
+Turn 2: |-boost|p2b: ogre&#39;s new friend|spa|1
+Turn 2: |move|p1b: Ogerpon|Ivy Cudgel|p2b: ogre&#39;s new friend|[anim] Ivy Cudgel Fire
+Turn 2: |-damage|p2b: ogre&#39;s new friend|14/100
+Turn 2: |move|p2b: ogre&#39;s new friend|Nuzzle|p1b: Ogerpon
+Turn 2: |-resisted|p1b: Ogerpon
+Turn 2: |-damage|p1b: Ogerpon|0 fnt
+Turn 2: |faint|p1b: Ogerpon
+Turn 2: |move|p2a: doesnt care 2|Surging Strikes|p1a: Miraidon
+Turn 2: |-resisted|p1a: Miraidon
+Turn 2: |-crit|p1a: Miraidon
+Turn 2: |-damage|p1a: Miraidon|91/100
+Turn 2: |-resisted|p1a: Miraidon
+Turn 2: |-crit|p1a: Miraidon
+Turn 2: |-damage|p1a: Miraidon|79/100
+Turn 2: |-resisted|p1a: Miraidon
+Turn 2: |-crit|p1a: Miraidon
+Turn 2: |-damage|p1a: Miraidon|69/100
+Turn 2: |-hitcount|p1a: Miraidon|3
+Turn 2: |
+Turn 2: |upkeep
+Turn 2: |c|☆spodermees|do you not know how lighting rod works?
+Turn 2: |c|☆mumboclo|Completely forgot😭
+Turn 2: |inactive|mumboclo has 30 seconds left.
+Turn 2: |c|☆spodermees|fair
+Turn 2: |inactive|mumboclo has 20 seconds left.
+Turn 2: |
+Turn 2: |t:|1773573570
+Turn 2: |switch|p1b: Torkoal|Torkoal, L50, F|100/100
+Turn 2: |-weather|SunnyDay|[from] ability: Drought|[of] p1b: Torkoal
+Turn 3: |turn|3
+Turn 3: |
+Turn 3: |t:|1773573591
+Turn 3: |switch|p1a: Porygon2|Porygon2, L50|100/100
+Turn 3: |-ability|p1a: Porygon2|Download|boost
+Turn 3: |-boost|p1a: Porygon2|spa|1
+Turn 3: |-terastallize|p2a: doesnt care 2|Water
+Turn 3: |move|p2b: ogre&#39;s new friend|Volt Switch|p1b: Torkoal
+Turn 3: |-damage|p1b: Torkoal|31/100
+Turn 3: |
+Turn 3: |t:|1773573601
+Turn 3: |switch|p2b: tera rider|Calyrex-Ice, L50|100/100|[from] Volt Switch
+Turn 3: |-ability|p2b: tera rider|As One
+Turn 3: |-ability|p2b: tera rider|Unnerve
+Turn 3: |move|p2a: doesnt care 2|Surging Strikes|p1b: Torkoal
+Turn 3: |-supereffective|p1b: Torkoal
+Turn 3: |-crit|p1b: Torkoal
+Turn 3: |-damage|p1b: Torkoal|10/100
+Turn 3: |-supereffective|p1b: Torkoal
+Turn 3: |-crit|p1b: Torkoal
+Turn 3: |-damage|p1b: Torkoal|0 fnt
+Turn 3: |faint|p1b: Torkoal
+Turn 3: |-hitcount|p1: Torkoal|2
+Turn 3: |
+Turn 3: |-weather|SunnyDay|[upkeep]
+Turn 3: |upkeep
+Turn 3: |c|☆mumboclo|Gg
+Turn 3: |-message|mumboclo forfeited.
+Turn 3: |
+Turn 3: |win|spodermees
+Turn 3: |raw|mumboclo&#39;s rating: 1073 &amp;rarr; &lt;strong&gt;1048&lt;/strong&gt;&lt;br /&gt;(-25 for losing)
+Turn 3: |raw|spodermees&#39;s rating: 1000 &amp;rarr; &lt;strong&gt;1048&lt;/strong&gt;&lt;br /&gt;(+48 for winning)
+Turn 3: |l|☆mumboclo
+Turn 3: |player|p1|</pre>
+                            </details>
+                        
+                    
+                        <div class="list-item">
+                            <div>
+                                <strong>Replay</strong>
+                                <span>[Gen 9] VGC 2026 Reg I (Bo3) · 2026-03-15T11:20:33</span>
+                                
+                                    <span>mumboclo vs spodermees</span>
+                                
+                                <span>Winner: spodermees · Lost</span>
+                                
+                            </div>
+                            <div class="list-actions">
+                                
+                                    <a class="chip" href="https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559469272" target="_blank" rel="noreferrer">Replay</a>
+                                
+                                <a class="chip" href="https://play.pokemonshowdown.com/" target="_blank" rel="noreferrer">Showdown</a>
+                            </div>
+                        </div>
+                        
+                        
+                            <details class="collapsible" style="margin: 8px 0 12px 0;">
+                                <summary>
+                                    <span class="muted">Log (150 regels)</span>
+                                </summary>
+                                <pre class="log-output" style="margin-top: 10px;">|j|☆mumboclo
+|j|☆spodermees
+|html|&lt;table width=&#34;100%&#34;&gt;&lt;tr&gt;&lt;td align=&#34;left&#34;&gt;mumboclo&lt;/td&gt;&lt;td align=&#34;right&#34;&gt;spodermees&lt;/tr&gt;&lt;tr&gt;&lt;td align=&#34;left&#34;&gt;&lt;i class=&#34;fa fa-circle-o&#34;&gt;&lt;/i&gt; &lt;i class=&#34;fa fa-circle-o&#34;&gt;&lt;/i&gt; &lt;/td&gt;&lt;td align=&#34;right&#34;&gt;&lt;i class=&#34;fa fa-circle-o&#34;&gt;&lt;/i&gt; &lt;i class=&#34;fa fa-circle-o&#34;&gt;&lt;/i&gt; &lt;/tr&gt;&lt;/table&gt;
+|uhtml|bestof|&lt;h2&gt;&lt;strong&gt;Game 1&lt;/strong&gt; of &lt;a href=&#34;/game-bestof3-gen9vgc2026regibo3-2559469271&#34;&gt;a best-of-3&lt;/a&gt;&lt;/h2&gt;
+|t:|1773573134
+|gametype|doubles
+|player|p1|mumboclo|170|1073
+|player|p2|spodermees|sailor|1000
+|gen|9
+|tier|[Gen 9] VGC 2026 Reg I (Bo3)
+|rated|
+|rule|Species Clause: Limit one of each Pokémon
+|rule|Item Clause: Limit 1 of each item
+|clearpoke
+|poke|p1|Torkoal, L50, F|
+|poke|p1|Zoroark-Hisui, L50, M|
+|poke|p1|Ogerpon-Hearthflame, L50, F|
+|poke|p1|Porygon2, L50|
+|poke|p1|Zacian-*, L50|
+|poke|p1|Miraidon, L50|
+|poke|p2|Kyogre, L50|
+|poke|p2|Calyrex-Ice, L50|
+|poke|p2|Ursaluna-Bloodmoon, L50, M|
+|poke|p2|Raichu, L50, F|
+|poke|p2|Indeedee-F, L50, F|
+|poke|p2|Urshifu-*, L50, F|
+|teampreview|4
+|showteam|p1|Torkoal||Charcoal|Drought|Eruption,EarthPower,Protect,LavaPlume|||F|||50|,,,,,Fire]Zoroark-Hisui||FocusSash|Illusion|BitterMalice,Flamethrower,Uturn,Protect|||M|||50|,,,,,Normal]Ogerpon-Hearthflame||HearthflameMask|MoldBreaker|FollowMe,SpikyShield,IvyCudgel,WoodHammer|||F|||50|,,,,,Fire]Porygon2||Eviolite|Download|Recover,TeraBlast,TrickRoom,ShadowBall||||||50|,,,,,Fighting]Zacian-Crowned||RustedSword|IntrepidSword|behemothblade,CloseCombat,PlayRough,Protect||||||50|,,,,,Fighting]Miraidon||ChoiceSpecs|HadronEngine|Discharge,VoltSwitch,DazzlingGleam,DracoMeteor||||||50|,,,,,Fairy
+|showteam|p2|Kyogre||Leftovers|Drizzle|CalmMind,OriginPulse,Protect,IceBeam||||||50|,,,,,Grass]Calyrex-Ice||ClearAmulet|AsOneGlastrier|TrickRoom,GlacialLance,Protect,HighHorsepower||||||50|,,,,,Fire]Ursaluna-Bloodmoon||LifeOrb|MindsEye|Protect,BloodMoon,HyperVoice,EarthPower|||M|||50|,,,,,Normal]Raichu||AssaultVest|LightningRod|FakeOut,Endeavor,VoltSwitch,Nuzzle|||F|||50|,,,,,Fairy]Indeedee-F||RockyHelmet|PsychicSurge|FollowMe,ShadowBall,TrickRoom,HelpingHand|||F|||50|,,,,,Psychic]Urshifu-Rapid-Strike||FocusSash|UnseenFist|SurgingStrikes,AquaJet,CloseCombat,Detect|||F|||50|,,,,,Water
+|inactive|Battle timer is ON: inactive players will automatically lose when time&#39;s up. (requested by spodermees)
+|inactive|mumboclo has 60 seconds left.
+|inactive|spodermees has 60 seconds left.
+|inactive|mumboclo has 30 seconds left.
+|inactive|mumboclo has 20 seconds left.
+|
+|t:|1773573209
+|teamsize|p1|4
+|teamsize|p2|4
+|start
+|switch|p1a: Torkoal|Torkoal, L50, F|100/100
+|switch|p1b: Zacian|Zacian-Crowned, L50|100/100
+|switch|p2a: doesnt care 2|Urshifu-Rapid-Strike, L50, F|100/100
+|switch|p2b: ogre&#39;s new friend|Raichu, L50, F|100/100
+|-weather|SunnyDay|[from] ability: Drought|[of] p1a: Torkoal
+Turn 1: |turn|1
+Turn 1: |inactive|mumboclo has 30 seconds left.
+Turn 1: |inactive|mumboclo has 20 seconds left.
+Turn 1: |inactive|mumboclo has 15 seconds left.
+Turn 1: |
+Turn 1: |t:|1773573253
+Turn 1: |switch|p2b: ogre without torn|Kyogre, L50|100/100
+Turn 1: |-weather|RainDance|[from] ability: Drizzle|[of] p2b: ogre without torn
+Turn 1: |-terastallize|p2a: doesnt care 2|Water
+Turn 1: |move|p1b: Zacian|Bitter Malice|p2a: doesnt care 2
+Turn 1: |-damage|p2a: doesnt care 2|37/100
+Turn 1: |-unboost|p2a: doesnt care 2|atk|1
+Turn 1: |move|p2a: doesnt care 2|Surging Strikes|p1b: Zacian
+Turn 1: |-crit|p1b: Zacian
+Turn 1: |-damage|p1b: Zacian|8/100
+Turn 1: |replace|p1b: Zoroark|Zoroark-Hisui, L50, M
+Turn 1: |-end|p1b: Zoroark|Illusion
+Turn 1: |-crit|p1b: Zoroark
+Turn 1: |-damage|p1b: Zoroark|0 fnt
+Turn 1: |faint|p1b: Zoroark
+Turn 1: |-hitcount|p1: Zoroark|2
+Turn 1: |move|p1a: Torkoal|Earth Power|p2b: ogre without torn
+Turn 1: |-damage|p2b: ogre without torn|80/100
+Turn 1: |-unboost|p2b: ogre without torn|spd|1
+Turn 1: |
+Turn 1: |-weather|RainDance|[upkeep]
+Turn 1: |-heal|p2b: ogre without torn|86/100|[from] item: Leftovers
+Turn 1: |upkeep
+Turn 1: |inactive|mumboclo has 30 seconds left.
+Turn 1: |
+Turn 1: |t:|1773573280
+Turn 1: |switch|p1b: Porygon2|Porygon2, L50|100/100
+Turn 1: |-ability|p1b: Porygon2|Download|boost
+Turn 1: |-boost|p1b: Porygon2|spa|1
+Turn 2: |turn|2
+Turn 2: |inactive|mumboclo has 30 seconds left.
+Turn 2: |inactive|mumboclo has 20 seconds left.
+Turn 2: |
+Turn 2: |t:|1773573320
+Turn 2: |switch|p1a: Zacian|Zacian-Crowned, L50|100/100
+Turn 2: |-ability|p1a: Zacian|Intrepid Sword|boost
+Turn 2: |-boost|p1a: Zacian|atk|1
+Turn 2: |move|p2a: doesnt care 2|Surging Strikes|p1a: Zacian
+Turn 2: |-crit|p1a: Zacian
+Turn 2: |-damage|p1a: Zacian|59/100
+Turn 2: |-crit|p1a: Zacian
+Turn 2: |-damage|p1a: Zacian|20/100
+Turn 2: |-crit|p1a: Zacian
+Turn 2: |-damage|p1a: Zacian|0 fnt
+Turn 2: |faint|p1a: Zacian
+Turn 2: |-hitcount|p1: Zacian|3
+Turn 2: |move|p2b: ogre without torn|Origin Pulse|p1b: Porygon2
+Turn 2: |-damage|p1b: Porygon2|30/100
+Turn 2: |move|p1b: Porygon2|Tera Blast|p2a: doesnt care 2
+Turn 2: |-damage|p2a: doesnt care 2|0 fnt
+Turn 2: |faint|p2a: doesnt care 2
+Turn 2: |
+Turn 2: |-weather|RainDance|[upkeep]
+Turn 2: |-heal|p2b: ogre without torn|91/100|[from] item: Leftovers
+Turn 2: |upkeep
+Turn 2: |
+Turn 2: |t:|1773573342
+Turn 2: |switch|p1a: Torkoal|Torkoal, L50, F|100/100
+Turn 2: |switch|p2a: ogre&#39;s new friend|Raichu, L50, F|100/100
+Turn 2: |-weather|SunnyDay|[from] ability: Drought|[of] p1a: Torkoal
+Turn 3: |turn|3
+Turn 3: |inactive|mumboclo has 30 seconds left.
+Turn 3: |
+Turn 3: |t:|1773573373
+Turn 3: |move|p2a: ogre&#39;s new friend|Fake Out|p1a: Torkoal
+Turn 3: |-damage|p1a: Torkoal|93/100
+Turn 3: |move|p2b: ogre without torn|Origin Pulse|p1a: Torkoal|[spread] p1a
+Turn 3: |-miss|p2b: ogre without torn|p1b: Porygon2
+Turn 3: |-supereffective|p1a: Torkoal
+Turn 3: |-damage|p1a: Torkoal|28/100
+Turn 3: |cant|p1a: Torkoal|flinch
+Turn 3: |move|p1b: Porygon2|Trick Room|p1b: Porygon2
+Turn 3: |-fieldstart|move: Trick Room|[of] p1b: Porygon2
+Turn 3: |
+Turn 3: |-weather|SunnyDay|[upkeep]
+Turn 3: |-heal|p2b: ogre without torn|97/100|[from] item: Leftovers
+Turn 3: |upkeep
+Turn 4: |turn|4
+Turn 4: |inactive|mumboclo has 30 seconds left.
+Turn 4: |inactive|mumboclo has 20 seconds left.
+Turn 4: |inactive|mumboclo has 15 seconds left.
+Turn 4: |
+Turn 4: |t:|1773573413
+Turn 4: |-terastallize|p1a: Torkoal|Fire
+Turn 4: |move|p1a: Torkoal|Lava Plume|p2b: ogre without torn|[spread] p1b,p2a,p2b
+Turn 4: |-resisted|p2b: ogre without torn
+Turn 4: |-damage|p1b: Porygon2|0 fnt
+Turn 4: |-damage|p2a: ogre&#39;s new friend|35/100
+Turn 4: |-damage|p2b: ogre without torn|61/100
+Turn 4: |-status|p2b: ogre without torn|brn
+Turn 4: |faint|p1b: Porygon2
+Turn 4: |move|p2b: ogre without torn|Origin Pulse|p1a: Torkoal
+Turn 4: |-supereffective|p1a: Torkoal
+Turn 4: |-damage|p1a: Torkoal|0 fnt
+Turn 4: |faint|p1a: Torkoal
+Turn 4: |
+Turn 4: |win|spodermees
+Turn 4: ||spodermees is ready for game 2.
+Turn 4: |inactive|mumboclo has 30 seconds to confirm battle start!
+Turn 4: ||mumboclo is ready for game 2.
+Turn 4: |uhtml|next|Next: &lt;a href=&#34;/battle-gen9vgc2026regibo3-2559470897&#34;&gt;&lt;strong&gt;Game 2 of 3&lt;/strong&gt;&lt;/a&gt;</pre>
+                            </details>
+                        
+                    
+                </div>
             
         </section>
 
@@ -186,8 +575,8 @@
         </section>
     </main>
 
-    <script type="application/json" id="damage-rows-data">[]</script>
-    <script type="application/json" id="rating-history-data">[]</script>
+    <script type="application/json" id="damage-rows-data">[{"actor": "Zacian", "target": "doesnt care 2", "move": "Bitter Malice", "value_low": 63.0, "value_high": 63.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559469272"}, {"actor": "doesnt care 2", "target": "Zacian", "move": "Surging Strikes", "value_low": 92.0, "value_high": 92.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559469272"}, {"actor": "Torkoal", "target": "ogre without torn", "move": "Earth Power", "value_low": 20.0, "value_high": 20.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559469272"}, {"actor": "doesnt care 2", "target": "Zacian", "move": "Surging Strikes", "value_low": 41.0, "value_high": 41.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559469272"}, {"actor": "doesnt care 2", "target": "Zacian", "move": "Surging Strikes", "value_low": 39.0, "value_high": 39.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559469272"}, {"actor": "ogre without torn", "target": "Porygon2", "move": "Origin Pulse", "value_low": 70.0, "value_high": 70.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559469272"}, {"actor": "ogre's new friend", "target": "Torkoal", "move": "Fake Out", "value_low": 7.0, "value_high": 7.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559469272"}, {"actor": "ogre without torn", "target": "Torkoal", "move": "Origin Pulse", "value_low": 65.0, "value_high": 65.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559469272"}, {"actor": "Torkoal", "target": "ogre's new friend", "move": "Lava Plume", "value_low": 65.0, "value_high": 65.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559469272"}, {"actor": "Torkoal", "target": "ogre without torn", "move": "Lava Plume", "value_low": 19.0, "value_high": 19.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559469272"}, {"actor": "ogre's new friend", "target": "Ogerpon", "move": "Fake Out", "value_low": 11.0, "value_high": 11.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559470897"}, {"actor": "doesnt care 2", "target": "Ogerpon", "move": "Surging Strikes", "value_low": 26.0, "value_high": 26.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559470897"}, {"actor": "doesnt care 2", "target": "Ogerpon", "move": "Surging Strikes", "value_low": 28.0, "value_high": 28.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559470897"}, {"actor": "doesnt care 2", "target": "Ogerpon", "move": "Surging Strikes", "value_low": 29.0, "value_high": 29.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559470897"}, {"actor": "Ogerpon", "target": "ogre's new friend", "move": "Ivy Cudgel", "value_low": 86.0, "value_high": 86.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559470897"}, {"actor": "doesnt care 2", "target": "Miraidon", "move": "Surging Strikes", "value_low": 9.0, "value_high": 9.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559470897"}, {"actor": "doesnt care 2", "target": "Miraidon", "move": "Surging Strikes", "value_low": 12.0, "value_high": 12.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559470897"}, {"actor": "doesnt care 2", "target": "Miraidon", "move": "Surging Strikes", "value_low": 10.0, "value_high": 10.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559470897"}, {"actor": "ogre's new friend", "target": "Torkoal", "move": "Volt Switch", "value_low": 69.0, "value_high": 69.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559470897"}, {"actor": "doesnt care 2", "target": "Torkoal", "move": "Surging Strikes", "value_low": 21.0, "value_high": 21.0, "replay_url": "https://replay.pokemonshowdown.com/gen9vgc2026regibo3-2559470897"}]</script>
+    <script type="application/json" id="rating-history-data">[{"user": "mumboclo", "elo": 1048, "format": "[Gen 9] VGC 2026 Reg I (Bo3)", "created_at": "2026-03-15T11:20:33"}, {"user": "spodermees", "elo": 1048, "format": "[Gen 9] VGC 2026 Reg I (Bo3)", "created_at": "2026-03-15T11:20:33"}]</script>
     <script>
         const damageRows = JSON.parse(document.getElementById('damage-rows-data')?.textContent || '[]');
         const ratingHistory = JSON.parse(document.getElementById('rating-history-data')?.textContent || '[]');
